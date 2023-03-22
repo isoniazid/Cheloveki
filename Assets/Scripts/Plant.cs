@@ -5,17 +5,10 @@ using UnityEngine;
 public abstract class Plant : MonoBehaviour
 {
     private string _name;
-    public GameObject body;
 
-    public Plant()
-    {
-
-    }
     // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
+    public abstract void Start();
+  
 
     private Vector3 _position
     {
@@ -24,8 +17,6 @@ public abstract class Plant : MonoBehaviour
     }
 
     // Update is called once per frame
-    void Update()
-    {
-        
-    }
+    public abstract void Update();
+   
 }

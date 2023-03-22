@@ -14,10 +14,11 @@ public class Animal : MonoBehaviour
 {
     private float _step_size = 0.5f;
 
+    private Satiety _satiety = new Satiety();
     private string _currentAnimation = "goat_walk_forward";
     private Animator _animator;
     private float _timerStart = 0f;
-    private float _timeThreshold = 1f;
+    private float _timeThreshold = 5f;
     private DIRECTIONS _currentDir = DIRECTIONS.FORWARD;
     // Start is called before the first frame update
 
@@ -80,9 +81,9 @@ public class Animal : MonoBehaviour
             }
     }
 
-    void Wobble()
+    void Wobble(bool ready)
     {
-        if(TickPassed())
+        if(ready)
         {
             var rnd = new System.Random();
             int randomIndex = rnd.Next((int)DIRECTIONS.LEN);
@@ -108,10 +109,29 @@ public class Animal : MonoBehaviour
         }
     }
 
+    void checkNecessities()
+    {
+        if(!_satiety.isSatisfied())
+        {
+            Debug.Log("The animal is gonna die starving");
+        }
+    }
+
+    void UpdateNecessities(bool ready)
+    {
+        if(ready)
+        {
+            _satiety.Decrease(1);
+        }
+    }
+
     // Update is called once per frame
     void Update()
     {
-        Wobble();
+        bool tick = TickPassed();
+        UpdateNecessities(tick);
+        Wobble(tick);
+        checkNecessities();
         Move();
     }
 }
