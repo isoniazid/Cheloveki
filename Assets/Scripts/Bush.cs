@@ -19,6 +19,7 @@ public class Bush : Plant
     }
     public override void Start()
     {
+        base.Start();
         ChangeSprite();
     }
 

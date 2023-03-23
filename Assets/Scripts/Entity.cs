@@ -5,7 +5,7 @@ using UnityEngine;
 abstract public class Entity : MonoBehaviour
 {
 
-    protected float _timerStart = 0f;
+    protected float _timerStart;
     protected float _timeThreshold = 5f;
     public string _name;
     [SerializeField]
@@ -29,7 +29,10 @@ abstract public class Entity : MonoBehaviour
 
     
     // Start is called before the first frame update
-    public abstract void Start();
+    public virtual void Start()
+    {
+        _timerStart = Time.time;
+    }
 
 
     // Update is called once per frame

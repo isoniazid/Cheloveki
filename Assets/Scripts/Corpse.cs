@@ -15,6 +15,7 @@ public class Corpse : Entity
 
     public override void Start() 
     {
+        base.Start();
         spriteRenderer.sprite = spriteArray[(int)_currentState];
         _timeThreshold = 10f;
     }
