@@ -38,7 +38,7 @@ public class Corpse : Entity
 
     public override void OnMouseDown()
     {
-        Debug.Log($"Hello There\n I'm a {_name}");
+        Debug.Log($"Это труп: {_name}");
     }
 
     // Update is called once per frame

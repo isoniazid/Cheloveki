@@ -26,6 +26,7 @@ public class Bush : Plant
     {
         base.OnMouseDown();
         Debug.Log("Куст");
+        Debug.Log($"Положение: {transform.position}");
     }
 
     // Update is called once per frame

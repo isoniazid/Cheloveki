@@ -11,7 +11,7 @@ public class BushSpawner : MonoBehaviour
 
     IEnumerator Spawn()
     {
-        yield return new WaitForSeconds(0.1f);
+        yield return new WaitForSeconds(5);
         Vector3 pos = spawnPosition.position + new Vector3(Random.Range(-range.x,range.x), Random.Range(-range.y,range.y), 0f);
         Instantiate(currentObject, pos, Quaternion.identity);
         

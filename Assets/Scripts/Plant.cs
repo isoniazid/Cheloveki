@@ -6,7 +6,7 @@ public abstract class Plant : Entity
 {
 
     public override void OnMouseDown() {
-        Debug.Log("Это растение:");
+        Debug.Log("Это растение.");
         
     }
    
