@@ -8,7 +8,6 @@ public class BushSpawner : MonoBehaviour
     public Transform spawnPosition;
     [SerializeField] Vector2 range;
     [SerializeField] GameObject currentObject;
-    // Start is called before the first frame update
 
     IEnumerator Spawn()
     {

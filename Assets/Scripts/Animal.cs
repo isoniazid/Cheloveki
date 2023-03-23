@@ -12,15 +12,22 @@ public enum DIRECTIONS : int {
 
 public class Animal : MonoBehaviour
 {
-    private float _step_size = 0.5f;
+    [SerializeField] GameObject corpse; //Объект, создающийся, когда животное умирает
+    private float _step_size = 0.5f; //размер шага
+    private Satiety _satiety = new Satiety(); //сытость
+    private string _currentAnimation = "goat_walk_forward"; //текущая анимация
+    private Animator _animator; //для проигрывания анимаций
+    private float _timerStart = 0f; //стартовая точка таймера (меняется)
+    private float _timeThreshold = 5f; //размер тика
+    private DIRECTIONS _currentDir = DIRECTIONS.FORWARD; //Текущее направление движения
 
-    private Satiety _satiety = new Satiety();
-    private string _currentAnimation = "goat_walk_forward";
-    private Animator _animator;
-    private float _timerStart = 0f;
-    private float _timeThreshold = 5f;
-    private DIRECTIONS _currentDir = DIRECTIONS.FORWARD;
-    // Start is called before the first frame update
+    private STATE _currentState = STATE.CHILL; //Текущее состояние. По умолчанию - бродить без дела
+
+    private enum STATE : int 
+    {
+        CHILL,
+        SEEK_FOR_FOOD
+    };
 
     private bool TickPassed()
     {
@@ -108,13 +115,42 @@ public class Animal : MonoBehaviour
             }
         }
     }
+    void FindFood()
+    {
+        GameObject[] bushes;
+        bushes = GameObject.FindGameObjectsWithTag("Bush");
+        if(bushes != null)
+        {
+            foreach(GameObject entity in bushes)
+            {
+                Debug.Log($"Found bush with the coordinates {entity.transform.position}");
+            }
+        } 
+    }
 
-    void checkNecessities()
+    void Die() 
+    {
+        Instantiate(corpse, transform.position , Quaternion.identity);
+        Destroy(gameObject);
+    }
+
+    void CheckNecessities()
+    /*Проверка потребностей. Если есть неудовлетворенные потребности, состояние животного изменится, и оно начнет их удовлетворять*/
     {
         if(!_satiety.isSatisfied())
         {
-            Debug.Log("The animal is gonna die starving");
+            if(!_satiety.IsCritical())
+            {
+            _currentState = STATE.SEEK_FOR_FOOD;
+            return;
+            }
+            else
+            {
+                Die();
+            }
         }
+
+        _currentState = STATE.CHILL;
     }
 
     void UpdateNecessities(bool ready)
@@ -125,13 +161,18 @@ public class Animal : MonoBehaviour
         }
     }
 
-    // Update is called once per frame
+    private void OnMouseDown() 
+    {
+    Debug.Log($"Это животное.\n Позиция: {transform.position} \nСытость: {_satiety.currentState}");
+    }
+
+
     void Update()
     {
         bool tick = TickPassed();
         UpdateNecessities(tick);
         Wobble(tick);
-        checkNecessities();
+        CheckNecessities();
         Move();
     }
 }

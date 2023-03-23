@@ -6,6 +6,10 @@ using UnityEngine;
 
 public abstract class Necessity 
 {
+
+    public string _name;
+    public int _priority;
+    public int currentState = 100;
     //private const int highestPriority = 95;
     /*
     Здесь - максимальные значения приоритетов
@@ -42,25 +46,25 @@ public abstract class Necessity
     Эти очень сильно хотят в нирвану
     */
 
-    protected string _name;
-    protected int _priority;
-    // Start is called before the first frame update
-    
-}
 
-
-public class Satiety : Necessity
-{
-    public int currentState = 100; //На старте максимально сыт
-    public Satiety()
+        public bool isSatisfied()
+        /*Если потребность ниже некоего порога, то она не удовлетворена, и нужно это исправить*/
     {
-        var rndGen = new System.Random();
-        _name = "Сытость";
-        _priority = rndGen.Next(safetyPriority,phisiologicalPriority);
-
+        if(currentState<_priority)
+        {
+            return false;
+        }
+        return true;
     }
 
-    public void Increase(int val)
+    public bool IsCritical()
+    /*Если потребность на полном нуле, то уже поздно что-то делать. Только мириться с необратимыми последствиями*/
+    {
+        if (currentState == 0) return true;
+        else return false;
+    }
+
+        public void Increase(int val)
     {
         if(currentState-val <100)
         {
@@ -75,14 +79,29 @@ public class Satiety : Necessity
             currentState-=val;
         }
     }
+    
+}
 
-    public bool isSatisfied()
+
+public class Satiety : Necessity
+{
+     //На старте максимально сыт
+    public Satiety()
     {
-        if(currentState<_priority)
-        {
-            return false;
-        }
-        return true;
-    }
+        var rndGen = new System.Random();
+        _name = "Сытость";
+        _priority = rndGen.Next(safetyPriority,phisiologicalPriority);
 
+    }
+}
+
+
+public class SleepNecessity: Necessity
+{
+    public SleepNecessity()
+    {
+        var rndGen = new System.Random();
+        _name = "Сон";
+        _priority = rndGen.Next(safetyPriority,phisiologicalPriority);
+    }
 }

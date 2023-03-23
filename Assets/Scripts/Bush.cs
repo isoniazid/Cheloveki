@@ -22,6 +22,12 @@ public class Bush : Plant
         ChangeSprite();
     }
 
+    public override void OnMouseDown()
+    {
+        base.OnMouseDown();
+        Debug.Log("Куст");
+    }
+
     // Update is called once per frame
     public override void Update()
     {
