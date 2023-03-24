@@ -2,6 +2,13 @@ using UnityEngine;
 using System.Collections.Generic;
 using System;
 
+///////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
+/*Там, где есть какие-то недоделанные моменты, плохо сделанные места или просто
+участки кода, на которые стоит обратить внимание, комментарий начинается с NB*/
+///////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
+
 public enum DIRECTIONS : int {
     FORWARD,
     LEFT_FORWARD,
@@ -14,24 +21,33 @@ public enum DIRECTIONS : int {
     LEN
     };
 
+
+
 public class Animal : MonoBehaviour
 {
+    const bool MALE = true;
+    const bool FEMALE = false;
     //6,5rad ~= 360deg
+    public bool gender;
+
+    [SerializeField] GameObject child;
     [SerializeField] GameObject corpse; //Объект, создающийся, когда животное умирает
     private Vector3 _step_size = new Vector3(0.5f,0.5f,0f); //размер шага
     private Satiety _satiety = new Satiety(); //сытость
+    private SexNecessity _sexNecessity = new SexNecessity(60,100);
     private string _currentAnimation = "goat_walk_forward"; //текущая анимация
     private Animator _animator; //для проигрывания анимаций
     private float _timerStart; //стартовая точка таймера (меняется)
     private float _timeThreshold = 1f; //размер тика
     //private DIRECTIONS _currentDir = DIRECTIONS.FORWARD; //Текущее направление движения
     private Vector3 _currentStep = new Vector3(0.5f,0.5f,0f);
-    private STATE _currentState = STATE.CHILL; //Текущее состояние. По умолчанию - бродить без дела
+    public STATE _currentState = STATE.CHILL; //Текущее состояние. По умолчанию - бродить без дела
 
-    private enum STATE : int 
+    public enum STATE : int 
     {
         CHILL,
-        SEEK_FOR_FOOD
+        SEEK_FOR_FOOD,
+        SEEK_FOR_PARTNER
     };
 
 
@@ -41,6 +57,8 @@ public class Animal : MonoBehaviour
 
     void Start()
     {
+        System.Random rnd = new System.Random();
+         gender = (rnd.Next(2)==0);
         _timerStart = Time.time;
         _animator = GetComponent<Animator>();
         
@@ -48,22 +66,59 @@ public class Animal : MonoBehaviour
 
     private void OnMouseDown() 
     {
-    Debug.Log($"Это животное.\n Позиция: {transform.position} \nСытость: {_satiety.currentState}");
+    Debug.Log($"Это животное.");
+    Debug.Log($"Позиция: {transform.position}");
+    Debug.Log($"Сытость: {_satiety.CurrentStatePercent()}%");
+    Debug.Log($"Порог сытости: {_satiety.ThresholdPercent()}%");
+    Debug.Log($"Секс: {_sexNecessity.CurrentStatePercent()}%");
+    Debug.Log($"Порог для поиска партнера: {_sexNecessity.ThresholdPercent()}");
+    Debug.Log($"Пол: {GetGenderStr()}");
     }
 
+    private string GetGenderStr()
+    {
+        return gender ? "Самец" : "Самка";
+    }
 
 ////////////////////////////////////
 //Низкоуровневые методы перемещения, смерти и тд
 ///////////////////////////////////
 
     private void OnTriggerEnter2D(Collider2D collided) 
+    /*NB В будущем надо будет отвязать события потребностей от коллайдера*/
     {
         if(collided.tag == "Bush" && _currentState == STATE.SEEK_FOR_FOOD)
         {
             _satiety.Increase(10);
             Destroy(collided.gameObject);
-            Debug.Log("Покушал");
+            //Debug.Log("Покушал");
         }
+
+        if(collided.tag == tag && _currentState == STATE.SEEK_FOR_PARTNER)
+        {
+            //Debug.Log("Вот вот начнется...");
+            var partnerScript = collided.GetComponent<Animal>();
+
+            if(partnerScript.gender != gender && partnerScript._currentState == STATE.SEEK_FOR_PARTNER) 
+            {
+            /*NB обратите внимание, что я обращаюсь к скрипту партнера, а тут могут быть проблемы, о которых
+            я уже писал в FindPartners.
+            
+            Более того, я не проверяю, что это именно тот партнер, который был в getPartners, возможно,
+            одна хорни коза столкнулась с другой хорни козой, которые шли к третьей, но это, я думаю, неважно, главное, что все счастливы
+            И да, НИКАКОГО ХАРАССМЕНТА! Партнер тоже должен хотеть близости*/
+            
+                //Debug.Log("Ура давай ебаться!");
+                _sexNecessity.Increase();
+                if(gender == MALE)
+                {
+                /*NB Спавн детей происходит только если объект мужского пола.
+                Связано это с тем, что коллизия происходит и  у самки, и у самца, и если этого условия не будет,
+                то сгенерируются два ребенка. Возможно, это костыль*/
+                Instantiate(child, transform.position,Quaternion.identity);
+                }
+            }
+        }  
     }
 
     Vector3 FindNearest(GameObject [] array)
@@ -228,8 +283,25 @@ public class Animal : MonoBehaviour
         if (bushes.Length<1) return null;
         return bushes;
     }
-
-
+    
+    GameObject[] FindPartners()
+    {
+        GameObject[] partners = GameObject.FindGameObjectsWithTag(tag);
+        List<GameObject> tmp = new List<GameObject>(); //Временный список...
+        foreach(var partner in partners)
+        {
+            var partnerScript = partner.GetComponent<Animal>();//NB вот здесь могут возникнуть проблемы...
+            //...Если я чето в названии скрипта, или сделаю наследование, надо будет поменять Анимал на Human или Creature
+            if(partnerScript.gender != gender)//Если пол партнера не сопадает с твоим....
+            { 
+                tmp.Add(partner);//Ура!
+            }
+        }
+        partners = tmp.ToArray();
+        if(partners.Length<1) return null;
+        return partners;
+    }
+    
     void CheckNecessities()
     /*Проверка потребностей. Если есть неудовлетворенные потребности, состояние животного изменится, и оно начнет их удовлетворять*/
     {
@@ -246,13 +318,29 @@ public class Animal : MonoBehaviour
             }
         }
 
+        if(!_sexNecessity.isSatisfied())
+        {
+            if(!_satiety.IsCritical())
+            {
+            _currentState = STATE.SEEK_FOR_PARTNER;
+            return;
+            }
+            else
+            {
+                /*NB ЕЩЕ не допилил, что делать, если долго не сексил*/
+                Debug.Log("Forever alone...");
+            }
+        }
+
         _currentState = STATE.CHILL;
     }
+    
     void UpdateNecessities(bool ready)
     {
         if(ready)
         {
-            _satiety.Decrease(1);
+            _satiety.Decrease();
+            _sexNecessity.Decrease();
         }
     }
 
@@ -272,6 +360,11 @@ public class Animal : MonoBehaviour
             var food = FindFood();
             if(food != null) Taxis(FindNearest(food));
             else _currentState = STATE.CHILL;
+            break;
+
+            case STATE.SEEK_FOR_PARTNER:
+            var partners = FindPartners();
+            if(partners != null) Taxis(FindNearest(partners));
             break;
         }
 
