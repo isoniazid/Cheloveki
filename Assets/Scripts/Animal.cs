@@ -34,7 +34,7 @@ public class Animal : MonoBehaviour
     [SerializeField] GameObject corpse; //Объект, создающийся, когда животное умирает
     private Vector3 _step_size = new Vector3(0.5f,0.5f,0f); //размер шага
     private Satiety _satiety = new Satiety(); //сытость
-    private SexNecessity _sexNecessity = new SexNecessity(60,100);
+    private SexNecessity _sexNecessity = new SexNecessity();
     private string _currentAnimation = "goat_walk_forward"; //текущая анимация
     private Animator _animator; //для проигрывания анимаций
     private float _timerStart; //стартовая точка таймера (меняется)
@@ -104,7 +104,7 @@ public class Animal : MonoBehaviour
     {
         if(collided.tag == "Bush" && _currentState == STATE.SEEK_FOR_FOOD)
         {
-            _satiety.Increase(10);
+            _satiety.Increase();
             Destroy(collided.gameObject);
             //Debug.Log("Покушал");
         }

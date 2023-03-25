@@ -9,7 +9,7 @@ public class InfoText : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        infoText.text = "it works!";
+        infoText.text = "";
     }
 
     public void ChangeText(string text)
