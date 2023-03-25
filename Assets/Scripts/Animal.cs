@@ -43,6 +43,10 @@ public class Animal : MonoBehaviour
     private Vector3 _currentStep = new Vector3(0.5f,0.5f,0f);
     public STATE _currentState = STATE.CHILL; //Текущее состояние. По умолчанию - бродить без дела
 
+    /*NB я еще пока учусь разбираться с делегатами, но думаю, что запихнуть их сюда будет в тему*/
+    delegate void Send(string text);
+    Send SendText;
+
     public enum STATE : int 
     {
         CHILL,
@@ -57,6 +61,7 @@ public class Animal : MonoBehaviour
 
     void Start()
     {
+        SendText = GameObject.FindGameObjectWithTag("MainUI").GetComponent<InfoText>().ChangeText;
         System.Random rnd = new System.Random();
          gender = (rnd.Next(2)==0);
         _timerStart = Time.time;
@@ -66,13 +71,23 @@ public class Animal : MonoBehaviour
 
     private void OnMouseDown() 
     {
-    Debug.Log($"Это животное.");
+        string message = "";
+        message+="Это животное.\n";
+        message+=$"Пол: {GetGenderStr()}\n";
+        message+=$"Позиция: {transform.position}\n";
+        message+=$"Сытость: {_satiety.CurrentStatePercent()}%\n";
+        message+=$"Порог сытости: {_satiety.ThresholdPercent()}%\n";
+        message+=$"Секс: {_sexNecessity.CurrentStatePercent()}%\n";
+        message+=$"Порог для поиска партнера: {_sexNecessity.ThresholdPercent()}%\n";
+        SendText(message);
+
+    /* Debug.Log($"Это животное.");
     Debug.Log($"Позиция: {transform.position}");
     Debug.Log($"Сытость: {_satiety.CurrentStatePercent()}%");
     Debug.Log($"Порог сытости: {_satiety.ThresholdPercent()}%");
     Debug.Log($"Секс: {_sexNecessity.CurrentStatePercent()}%");
     Debug.Log($"Порог для поиска партнера: {_sexNecessity.ThresholdPercent()}");
-    Debug.Log($"Пол: {GetGenderStr()}");
+    Debug.Log($"Пол: {GetGenderStr()}"); */
     }
 
     private string GetGenderStr()

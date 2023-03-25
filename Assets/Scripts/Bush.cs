@@ -23,11 +23,13 @@ public class Bush : Plant
         ChangeSprite();
     }
 
-    public override void OnMouseDown()
+    protected override void OnMouseDown()
     {
         base.OnMouseDown();
-        Debug.Log("Куст");
-        Debug.Log($"Положение: {transform.position}");
+
+        messageText+="Куст\n";
+        messageText+=$"Положение: {transform.position}\n";
+        SendText(messageText);
     }
 
     // Update is called once per frame

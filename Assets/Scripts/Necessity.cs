@@ -107,7 +107,7 @@ public abstract class Necessity
 
     public virtual void Increase()
     {
-        Increase(1);
+        Increase(_maxLevel);
     }
 
     public void Decrease()
@@ -155,11 +155,6 @@ public class SexNecessity : Necessity
     public SexNecessity(int min, int max) : base(min, max)
     {
         _name = "Секс";
-    }
-
-    public override void Increase()
-    {
-        Increase(_maxLevel); // чтобы не слишком часто....
     }
 }
 

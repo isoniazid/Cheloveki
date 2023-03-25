@@ -5,8 +5,10 @@ using UnityEngine;
 public abstract class Plant : Entity
 {
 
-    public override void OnMouseDown() {
-        Debug.Log("Это растение.");
+    protected override void OnMouseDown() {
+        messageText = "";
+        messageText += "Это растение.";
+        //SendText("Это растение.");
         
     }
    
