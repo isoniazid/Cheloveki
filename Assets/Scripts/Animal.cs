@@ -80,14 +80,6 @@ public class Animal : MonoBehaviour
         message+=$"Секс: {_sexNecessity.CurrentStatePercent()}%\n";
         message+=$"Порог для поиска партнера: {_sexNecessity.ThresholdPercent()}%\n";
         SendText(message);
-
-    /* Debug.Log($"Это животное.");
-    Debug.Log($"Позиция: {transform.position}");
-    Debug.Log($"Сытость: {_satiety.CurrentStatePercent()}%");
-    Debug.Log($"Порог сытости: {_satiety.ThresholdPercent()}%");
-    Debug.Log($"Секс: {_sexNecessity.CurrentStatePercent()}%");
-    Debug.Log($"Порог для поиска партнера: {_sexNecessity.ThresholdPercent()}");
-    Debug.Log($"Пол: {GetGenderStr()}"); */
     }
 
     private string GetGenderStr()
@@ -324,8 +316,8 @@ public class Animal : MonoBehaviour
         {
             if(!_satiety.IsCritical())
             {
-            _currentState = STATE.SEEK_FOR_FOOD;
-            return;
+                _currentState = STATE.SEEK_FOR_FOOD;
+                return;
             }
             else
             {
@@ -337,8 +329,8 @@ public class Animal : MonoBehaviour
         {
             if(!_satiety.IsCritical())
             {
-            _currentState = STATE.SEEK_FOR_PARTNER;
-            return;
+                _currentState = STATE.SEEK_FOR_PARTNER;
+                return;
             }
             else
             {
