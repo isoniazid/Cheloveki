@@ -38,7 +38,7 @@ public class Animal : MonoBehaviour
     private string _currentAnimation = "goat_walk_forward"; //текущая анимация
     private Animator _animator; //для проигрывания анимаций
     private float _timerStart; //стартовая точка таймера (меняется)
-    private float _timeThreshold = 1f; //размер тика
+    private float _timeThreshold = 0.6f; //размер тика
     //private DIRECTIONS _currentDir = DIRECTIONS.FORWARD; //Текущее направление движения
     private Vector3 _currentStep = new Vector3(0.5f,0.5f,0f);
     public STATE _currentState = STATE.CHILL; //Текущее состояние. По умолчанию - бродить без дела

@@ -3,11 +3,21 @@ using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 
+public static class TIME_LEN
+{
+    /*Я по умолчанию выставил у всех юнитов тикер в 1 игровой час*/
+    public const int DAYNIGHT_LEN = 24;
+    public const int WEEK_LEN = 7*24;
+    public const int MONTH_LEN = 7*4*24;
+    public const int YEAR_LEN = 7*4*24*365;
+}
+
+
 public class WorldTime : MonoBehaviour
 {
     [SerializeField] TextMeshProUGUI _worldTimeTextLabel;
     private float _timerStart;
-    private float _timeThreshold = 0.01f; //Игровая секунда
+    private float _timeThreshold = 0.01f; //Игровая минута
 
     private Period _hour = new Period(60); //Игровой час
 
@@ -30,25 +40,25 @@ public class WorldTime : MonoBehaviour
     {
         if(_currentHour > _dayLen)
         {
-            _currentHour = 0;
+            _currentHour = 1;
             _currentDay++;
         }
 
         if(_currentDay > _weekLen)
         {
-            _currentDay = 0;
+            _currentDay = 1;
             _currentWeek++;
         }
 
         if(_currentWeek > _monthLen)
         {
-            _currentWeek = 0;
+            _currentWeek = 1;
             _currentMonth++;
         }
 
         if(_currentMonth > _yearLen)
         {
-            _currentMonth = 0;
+            _currentMonth = 1;
             _currentYear++;
         }
 

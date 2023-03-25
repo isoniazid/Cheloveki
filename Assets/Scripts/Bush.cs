@@ -6,9 +6,12 @@ using UnityEngine;
 
 public class Bush : Plant
 {
-    public SpriteRenderer spriteRenderer;
-    public Sprite[] spriteArray;
-    // Start is called before the first frame update
+    
+    protected override void Divide()
+    {
+        Instantiate(this, GetNearPosition(),Quaternion.identity);
+        //Debug.Log("Растение Размножилось");
+    }
 
     private void ChangeSprite()
     {
@@ -35,6 +38,9 @@ public class Bush : Plant
     // Update is called once per frame
     public override void Update()
     {
-        
+        if(_divisionPeriod.isPassed((TickPassed())))
+        {
+            Divide();
+        }
     }
 }

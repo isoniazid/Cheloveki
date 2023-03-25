@@ -11,13 +11,11 @@ public class Corpse : Entity
 
     enum STATE {DEAD, ROTTEN, BONES};
     private STATE _currentState = STATE.DEAD;
-    // Start is called before the first frame update
-
+    private Period _updatePeriod = new Period(TIME_LEN.DAYNIGHT_LEN);
     public override void Start() 
     {
         base.Start();
         spriteRenderer.sprite = spriteArray[(int)_currentState];
-        _timeThreshold = 10f;
     }
 
     private void HandleState()
@@ -45,8 +43,7 @@ public class Corpse : Entity
     // Update is called once per frame
     public override void Update()
     {
-        bool tick = TickPassed();
-        if(tick)
+        if(_updatePeriod.isPassed(TickPassed()))
         {
             HandleState();
         }

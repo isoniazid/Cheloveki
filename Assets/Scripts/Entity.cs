@@ -6,7 +6,7 @@ abstract public class Entity : MonoBehaviour
 {
 
     protected float _timerStart;
-    protected float _timeThreshold = 5f;
+    protected float _timeThreshold = 0.6f; //один игровой час
     public string _name;
     [SerializeField]
 
