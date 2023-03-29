@@ -13,12 +13,17 @@ using System;
 
 
 
-public class Animal : Creature
+public abstract class Animal : Creature
 {
+    protected override void Eat(GameObject food)
+    {
+        Debug.Log("Животное ест");
+    }
+
     protected override void OnMouseDown()
     {
         string message = "";
-        message += "Это животное.\n";
+        message += $"Это животное: {_name}\n";
         message += $"Пол: {GetGenderStr()}\n";
         message += $"Позиция: {transform.position}\n";
         message += $"Сытость: {_satiety.CurrentStatePercent()}%\n";

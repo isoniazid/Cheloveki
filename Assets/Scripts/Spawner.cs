@@ -8,23 +8,29 @@ public class Spawner : MonoBehaviour
     public float delay;
     [Range(0, 100f)]
 
-     int amount = 200;
-
     Vector3 spawnPosition;
     [SerializeField] Vector2 range;
     [SerializeField] GameObject[] currentObjects;
+    [SerializeField] int[] amounts;
 
     IEnumerator Spawn()
     {
-        for(int i =0; i<amount; ++i) 
-        {
             yield return new WaitForSeconds(delay);
-            Vector3 pos = spawnPosition + new Vector3(Random.Range(-range.x,range.x), Random.Range(-range.y,range.y), 0f);
-            foreach(GameObject obj in currentObjects) 
+            
+
+            for (int i = 0; i < currentObjects.Length; ++i)
             {
-                Instantiate(obj, pos, Quaternion.identity);
+                for (int j = 0; j < amounts[i]; ++j)
+                {
+                    Vector3 pos = spawnPosition + new Vector3(Random.Range(-range.x, range.x), Random.Range(-range.y, range.y), 0f);
+                    Instantiate(currentObjects[i], pos, Quaternion.identity);
+                }
             }
-        }
+            /*    foreach(GameObject obj in currentObjects) 
+               {
+
+               } */
+        
     }
 
     void Start()
@@ -36,6 +42,6 @@ public class Spawner : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
+
     }
 }

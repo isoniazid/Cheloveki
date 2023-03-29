@@ -37,7 +37,9 @@ public class Corpse : Entity
 
     protected override void OnMouseDown()
     {
-        SendText($"Это труп: {_name}");
+        string message = "";
+        message +=$"Это труп: {_name}";
+        SendText(message);
     }
 
     // Update is called once per frame

@@ -34,10 +34,12 @@ abstract public class Creature : Entity
     public bool gender;
     [SerializeField] GameObject child; //Объект, создающийся после размножения
     [SerializeField] GameObject corpse; //Объект, создающийся, когда животное умирает
+    
+    [SerializeField] protected List<GameObject> edibleFood = new List<GameObject>(); //Список того, что можно есть
     protected Vector3 _step_size = new Vector3(0.5f, 0.5f, 0f); //размер шага
     protected Satiety _satiety = new Satiety(); //сытость
     protected SexNecessity _sexNecessity = new SexNecessity();
-    protected string _currentAnimation = "goat_walk_forward"; //текущая анимация
+    protected string _currentAnimation = "walk_forward"; //текущая анимация
     protected Animator _animator; //для проигрывания анимаций
     protected Vector3 _currentStep = new Vector3(0.5f, 0.5f, 0f);
     public STATE _currentState = STATE.CHILL; //Текущее состояние. По умолчанию - бродить без дела
@@ -48,17 +50,18 @@ abstract public class Creature : Entity
         SEEK_FOR_FOOD,
         SEEK_FOR_PARTNER
     };
-    
+
     ////////////////////////////////////
     //Конструктор и взаимодействие с пользователем
     ///////////////////////////////////
 
     public override void Start()
     {
-        SendText = GameObject.FindGameObjectWithTag("MainUI").GetComponent<InfoText>().ChangeText;
+        base.Start();
+        //SendText = GameObject.FindGameObjectWithTag("MainUI").GetComponent<InfoText>().ChangeText;
         System.Random rnd = new System.Random();
         gender = (rnd.Next(2) == 0);
-        _timerStart = Time.time;
+        //_timerStart = Time.time;
         _animator = GetComponent<Animator>();
 
     }
@@ -80,14 +83,24 @@ abstract public class Creature : Entity
     ////////////////////////////////////
     //Низкоуровневые методы перемещения, смерти и тд
     ///////////////////////////////////
+
+    protected virtual void Eat(GameObject food)
+    {}
+    //{
+            //_satiety.Increase();
+            //Destroy(collided.gameObject);
+    //}
+
     protected virtual void OnTriggerEnter2D(Collider2D collided)
     /*NB В будущем надо будет отвязать события потребностей от коллайдера*/
     {
-        if (collided.tag == "Bush" && _currentState == STATE.SEEK_FOR_FOOD)
+        foreach(var collided_food in edibleFood)
         {
-            _satiety.Increase();
-            Destroy(collided.gameObject);
+        if (collided.tag == collided_food.tag && _currentState == STATE.SEEK_FOR_FOOD)
+        {
+            Eat(collided.gameObject);
             //Debug.Log("Покушал");
+        }
         }
 
         if (collided.tag == tag && _currentState == STATE.SEEK_FOR_PARTNER)
@@ -209,42 +222,42 @@ abstract public class Creature : Entity
         {
             /*пока нет анимаций для некоторых направлений!*/
             case DIRECTIONS.FORWARD:
-                ChangeAnimation("goat_walk_forward");
+                ChangeAnimation("walk_forward");
                 break;
 
             case DIRECTIONS.LEFT_FORWARD:
-                ChangeAnimation("goat_walk_left");
+                ChangeAnimation("walk_left");
                 break;
 
             case DIRECTIONS.RIGHT_FORWARD:
-                ChangeAnimation("goat_walk_right");
+                ChangeAnimation("walk_right");
                 break;
 
             case DIRECTIONS.BACKWARD:
-                ChangeAnimation("goat_walk_backward");
+                ChangeAnimation("walk_backward");
                 break;
 
             case DIRECTIONS.RIGHT_BACKWARD:
-                ChangeAnimation("goat_walk_right");
+                ChangeAnimation("walk_right");
                 break;
 
             case DIRECTIONS.LEFT_BACKWARD:
-                ChangeAnimation("goat_walk_left");
+                ChangeAnimation("walk_left");
                 break;
 
             case DIRECTIONS.LEFT:
-                ChangeAnimation("goat_walk_left");
+                ChangeAnimation("walk_left");
                 break;
 
             case DIRECTIONS.RIGHT:
-                ChangeAnimation("goat_walk_right");
+                ChangeAnimation("walk_right");
                 break;
         }
 
         ChangePosition(_currentStep);
     }
 
-    protected void Die()
+    public void Die()
     {
         Instantiate(corpse, transform.position, Quaternion.identity);
         Destroy(gameObject);
@@ -264,9 +277,18 @@ abstract public class Creature : Entity
     }
     protected GameObject[] FindFood()
     {
-        GameObject[] bushes = GameObject.FindGameObjectsWithTag("Bush");
-        if (bushes.Length < 1) return null;
-        return bushes;
+        List<GameObject> foodList = new List<GameObject>();
+        foreach(GameObject food_type in edibleFood)
+        {
+        GameObject[] food = GameObject.FindGameObjectsWithTag(food_type.tag);
+        if (!(food.Length < 1))
+        {
+        foodList.AddRange(food);
+        }
+        }
+        if(foodList.Count < 1) return null;
+        else return foodList.ToArray(); 
+        
     }
 
     protected GameObject[] FindPartners()
