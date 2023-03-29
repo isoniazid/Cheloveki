@@ -8,7 +8,7 @@ public class Spawner : MonoBehaviour
     public float delay;
     [Range(0, 100f)]
 
-     int amount = 1000;
+     int amount = 200;
 
     Vector3 spawnPosition;
     [SerializeField] Vector2 range;

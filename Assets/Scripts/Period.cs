@@ -21,14 +21,14 @@ public class Period
 
     public bool isPassed(bool tick)
     {
-        if(tick) currentNumberOfTicks++;
-        if(currentNumberOfTicks >= _len)
+        if (tick) currentNumberOfTicks++;
+        if (currentNumberOfTicks >= _len)
         {
-         currentNumberOfTicks = 0;
-         return true;   
+            currentNumberOfTicks = 0;
+            return true;
         }
         else return false;
     }
 
 
-    }
+}

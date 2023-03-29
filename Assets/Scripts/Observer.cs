@@ -3,7 +3,8 @@
 [DisallowMultipleComponent, RequireComponent(typeof(Camera))]
 
 
-public sealed class Observer : MonoBehaviour {
+public sealed class Observer : MonoBehaviour
+{
 
     [Range(0, 10f)]
     public float moveSpeed = 10f;
@@ -17,20 +18,20 @@ public sealed class Observer : MonoBehaviour {
 
     public float SCALE_STEP = 0.1f;
 
-    private void Start() 
+    private void Start()
     {
         this.camera = GetComponent<Camera>();
         //this.camera.enabled = true;
         //this.camera.ortographic = true;
     }
 
-    private void Update() 
+    private void Update()
     {
         UpdateInput();
         UpdatePosition();
     }
 
-    private void UpdateInput() 
+    private void UpdateInput()
     {
         Vector2 mousePosition = Input.mousePosition;
         if (Input.GetMouseButtonDown(0)) OnPointDown(mousePosition);
@@ -44,13 +45,13 @@ public sealed class Observer : MonoBehaviour {
 
     private void ChangeScale(float value)
     {
-        this.camera.fieldOfView +=value;
+        this.camera.fieldOfView += value;
     }
 
 
 
 
-    private void UpdatePosition() 
+    private void UpdatePosition()
     {
         float speed = Time.deltaTime * this.moveSpeed;
         if (this.isDragging) this.tempSens = this.sensitivity;
@@ -59,7 +60,7 @@ public sealed class Observer : MonoBehaviour {
         this.position = Vector2.Lerp(this.position, newPosition, speed);
     }
 
-    private void OnPointDown(Vector2 mousePosition) 
+    private void OnPointDown(Vector2 mousePosition)
     {
         this.tempCenter = GetWorldPoint(mousePosition);
         this.targetDirection = Vector2.zero;
@@ -67,13 +68,13 @@ public sealed class Observer : MonoBehaviour {
         this.isDragging = true;
     }
 
-    private void OnPointMove(Vector2 mousePosition) 
+    private void OnPointMove(Vector2 mousePosition)
     {
-        if (this.isDragging) 
+        if (this.isDragging)
         {
             Vector2 point = GetWorldPoint(mousePosition);
             float sqrDist = (this.tempCenter - point).sqrMagnitude;
-            if (sqrDist > 0.1f) 
+            if (sqrDist > 0.1f)
             {
                 this.targetDirection = (this.tempMousePos - mousePosition).normalized;
                 this.tempMousePos = mousePosition;
@@ -81,20 +82,20 @@ public sealed class Observer : MonoBehaviour {
         }
     }
 
-    private void OnPointUp(Vector2 mousePosition) 
+    private void OnPointUp(Vector2 mousePosition)
     {
         this.isDragging = false;
     }
 
-    
 
-    public Vector2 position 
+
+    public Vector2 position
     {
-        get { return this.transform.position;}
+        get { return this.transform.position; }
         set { this.transform.position = new Vector3(value.x, value.y, -10f); }
     }
 
-    private Vector2 GetWorldPoint(Vector2 mousePosition) 
+    private Vector2 GetWorldPoint(Vector2 mousePosition)
     {
         Vector2 point = Vector2.zero;
         Ray ray = this.camera.ScreenPointToRay(mousePosition);

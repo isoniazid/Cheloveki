@@ -9,70 +9,70 @@ using UnityEngine;
     Чем меньше число - тем больше времени понадобится, чтобы человек начал
     искать удовлетворения своей потребности
     */
-    //protected const int phisiologicalPriority = 95; //Еда, Секс, Сон
-    /*
-    Тут без комментариев. Это должно быть уже у животных
-    */
-    //protected const int safetyPriority = 80; // Безопасность, стабильность, комфорт
-    /*
-    Люди не хотят, чтобы на них нападали, хотят жить в теплом доме и чтобы были запасы еды
-    */
-    //protected const int socialPriority = 60; // Общение, внимание, забота, поддержка
-    /*
-    Люди сходят с ума, если у них нет семьи и друзей и они ни с кем не общаются
-    Люди хотя заниматься работой и нести пользу
-    */
-    //protected const int rulePriority = 40; // Власть, признание, самоуважение, значимость
-    /*
-    Люди хотят управлять другими людьми и подчинять их себе, либо влиять на них
-    */
-    //protected const int creativePriority = 20; //Творчество, образование
-    /*
-    Люди хотят творить, учиться и изобретать.
-    */
-    //protected const int hedonismPriority = 10; //Изысканность, красота, порядок
-    /*
-    Люди хотят изысков, красоты кутежа
-    */
-    //protected const int lowest_priority = -1; //БОХ
-    /*
-    Эти очень сильно хотят в нирвану
-    */ 
+//protected const int phisiologicalPriority = 95; //Еда, Секс, Сон
+/*
+Тут без комментариев. Это должно быть уже у животных
+*/
+//protected const int safetyPriority = 80; // Безопасность, стабильность, комфорт
+/*
+Люди не хотят, чтобы на них нападали, хотят жить в теплом доме и чтобы были запасы еды
+*/
+//protected const int socialPriority = 60; // Общение, внимание, забота, поддержка
+/*
+Люди сходят с ума, если у них нет семьи и друзей и они ни с кем не общаются
+Люди хотя заниматься работой и нести пользу
+*/
+//protected const int rulePriority = 40; // Власть, признание, самоуважение, значимость
+/*
+Люди хотят управлять другими людьми и подчинять их себе, либо влиять на них
+*/
+//protected const int creativePriority = 20; //Творчество, образование
+/*
+Люди хотят творить, учиться и изобретать.
+*/
+//protected const int hedonismPriority = 10; //Изысканность, красота, порядок
+/*
+Люди хотят изысков, красоты кутежа
+*/
+//protected const int lowest_priority = -1; //БОХ
+/*
+Эти очень сильно хотят в нирвану
+*/
 
-enum PRIORITY : int {PHISIOLOGICAL,SAFETY,SOCIAL,RULE,CREATIVITY,HEDONISM,GOD};
-public abstract class Necessity 
+enum PRIORITY : int { PHISIOLOGICAL, SAFETY, SOCIAL, RULE, CREATIVITY, HEDONISM, GOD };
+public abstract class Necessity
 {
 
     public string _name;
     public int _priority;
-    protected  int _maxLevel; //Максимальный уровень потребности. Чем выше - тем дольше она будет снижаться
-    protected  int _minGenLevel = 60; //минимальное значение для генератора
-    protected  int _maxGenLevel = 1000; //максимальное значение для генератора
+    protected int _maxLevel; //Максимальный уровень потребности. Чем выше - тем дольше она будет снижаться
+    protected int _minGenLevel = 60; //минимальное значение для генератора
+    protected int _maxGenLevel = 1000; //максимальное значение для генератора
     protected int _thresholdLevel = 50; //Порог, по достижении которого начнется поиск еды
     public int currentState;
-    
-    
+
+
     public Necessity()
     {
         var rndGen = new System.Random();
-        _maxLevel = rndGen.Next(_minGenLevel,_maxGenLevel);
+        _maxLevel = rndGen.Next(_minGenLevel, _maxGenLevel);
         currentState = _maxLevel;
     }
 
     public Necessity(int min, int max)
     {
-        if(min<_minGenLevel) min = _minGenLevel;
-        if(max > _maxGenLevel) max = _maxLevel; 
+        if (min < _minGenLevel) min = _minGenLevel;
+        if (max > _maxGenLevel) max = _maxLevel;
         var rndGen = new System.Random();
-        _maxLevel = rndGen.Next(min,max);
+        _maxLevel = rndGen.Next(min, max);
         currentState = _maxLevel;
     }
 
 
     public bool isSatisfied()
-        /*Если потребность ниже некоего порога, то она не удовлетворена, и нужно это исправить*/
+    /*Если потребность ниже некоего порога, то она не удовлетворена, и нужно это исправить*/
     {
-        if(currentState<_thresholdLevel)
+        if (currentState < _thresholdLevel)
         {
             return false;
         }
@@ -81,12 +81,12 @@ public abstract class Necessity
 
     public int CurrentStatePercent()
     {
-        return currentState*100/_maxLevel;
+        return currentState * 100 / _maxLevel;
     }
 
     public int ThresholdPercent()
     {
-        return _thresholdLevel*100/_maxLevel;
+        return _thresholdLevel * 100 / _maxLevel;
     }
 
     public bool IsCritical()
@@ -98,9 +98,9 @@ public abstract class Necessity
 
     public void Increase(int val)
     {
-        if(currentState+val <_maxLevel)
+        if (currentState + val < _maxLevel)
         {
-            currentState+=val;
+            currentState += val;
         }
         else currentState = _maxLevel;
     }
@@ -117,20 +117,20 @@ public abstract class Necessity
 
     public void Decrease(int val)
     {
-        if(currentState-val>=0)
+        if (currentState - val >= 0)
         {
-            currentState-=val;
+            currentState -= val;
         }
         else currentState = 0;
     }
-    
+
 }
 
 
 public class Satiety : Necessity
 {
     public new int _priority = (int)PRIORITY.PHISIOLOGICAL;
-     //На старте максимально сыт
+    //На старте максимально сыт
     public Satiety() : base()
     {
         _name = "Сытость";

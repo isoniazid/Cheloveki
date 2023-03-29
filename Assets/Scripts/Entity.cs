@@ -13,13 +13,13 @@ abstract public class Entity : MonoBehaviour
     /*NB я еще пока учусь разбираться с делегатами, но думаю, что запихнуть их сюда будет в тему*/
     protected delegate void Send(string text);
     protected Send SendText;
-    
+
     protected string messageText;
 
-     protected bool TickPassed()
+    protected bool TickPassed()
     {
         var currentTime = Time.time;
-        if(currentTime - _timerStart >= _timeThreshold)
+        if (currentTime - _timerStart >= _timeThreshold)
         {
             _timerStart = currentTime;
             return true;
@@ -34,11 +34,11 @@ abstract public class Entity : MonoBehaviour
         SendText(messageText);
         //Debug.Log("Это сущность");
 
-        
+
     }
 
 
-    
+
     // Start is called before the first frame update
     public virtual void Start()
     {
@@ -49,5 +49,5 @@ abstract public class Entity : MonoBehaviour
 
     // Update is called once per frame
     public abstract void Update();
-   
+
 }

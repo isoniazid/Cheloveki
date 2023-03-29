@@ -5,7 +5,7 @@ using TMPro;
 
 public class InfoText : MonoBehaviour
 {
-     [SerializeField] TextMeshProUGUI infoText;
+    [SerializeField] TextMeshProUGUI infoText;
     // Start is called before the first frame update
     void Start()
     {
@@ -20,6 +20,6 @@ public class InfoText : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
+
     }
 }

@@ -6,10 +6,10 @@ using UnityEngine;
 
 public class Bush : Plant
 {
-    
+
     protected override void Divide()
     {
-        Instantiate(this, GetNearPosition(),Quaternion.identity);
+        Instantiate(this, GetNearPosition(), Quaternion.identity);
         //Debug.Log("Растение Размножилось");
     }
 
@@ -30,15 +30,15 @@ public class Bush : Plant
     {
         base.OnMouseDown();
 
-        messageText+="Куст\n";
-        messageText+=$"Положение: {transform.position}\n";
+        messageText += "Куст\n";
+        messageText += $"Положение: {transform.position}\n";
         SendText(messageText);
     }
 
     // Update is called once per frame
     public override void Update()
     {
-        if(_divisionPeriod.isPassed((TickPassed())))
+        if (_divisionPeriod.isPassed((TickPassed())))
         {
             Divide();
         }
