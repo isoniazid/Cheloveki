@@ -4,6 +4,20 @@ using UnityEngine;
 
 public class Omivorous : Animal
 {
+
+    protected override void Eat(GameObject food)
+    {
+        _satiety.Increase();
+        if (food.tag == "Bush") Destroy(food);
+        
+        else
+        {
+            var eatenAnimalScript = food.GetComponent<Animal>();
+            eatenAnimalScript.Die();
+        }
+    }
+
+
     protected override void OnMouseDown()
     {
         string message = "";

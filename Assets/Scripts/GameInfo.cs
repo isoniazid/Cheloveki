@@ -16,8 +16,12 @@ public class GameInfo : MonoBehaviour
         yield return new WaitForSeconds(delay);
         var numOfGoats = GameObject.FindGameObjectsWithTag("Goat").Length;
         var numOfWolves = GameObject.FindGameObjectsWithTag("Wolf").Length;
+        var numOfDeers = GameObject.FindGameObjectsWithTag("Deer").Length;
         var numOfBushes = GameObject.FindGameObjectsWithTag("Bush").Length;
-        SendText($"Всего сущностей: {numOfGoats + numOfBushes+numOfWolves}.\n Волки: {numOfWolves}.\n Козы: {numOfGoats},\n кусты: {numOfBushes}");
+        var numOfBears = GameObject.FindGameObjectsWithTag("Bear").Length;
+        string text = $"Всего сущностей: {numOfGoats + numOfBushes + numOfWolves + numOfDeers+numOfBears}.\n";
+        text += $"Волки: {numOfWolves}.\nМедведи: {numOfBears}.\nКозы: {numOfGoats},\nОлени: {numOfDeers},\nКусты: {numOfBushes}";
+        SendText(text);
         //Debug.Log($"Всего сущностей: {numOfGoats + numOfBushes+numOfWolves}. Волки: {numOfWolves}. Козы: {numOfGoats}, кусты: {numOfBushes}");
         Start();
     }
@@ -28,7 +32,7 @@ public class GameInfo : MonoBehaviour
     void Start()
     {
         SendText = GameObject.FindGameObjectWithTag("MainUI").GetComponent<InfoText>().ChangeText;
-        SendText+=Debug.Log;
+        SendText += Debug.Log;
         StartCoroutine(EntityLogger());
     }
 
