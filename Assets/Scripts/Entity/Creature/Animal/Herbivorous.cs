@@ -5,7 +5,7 @@ using UnityEngine;
 public class Herbivorous : Animal
 {
     protected override void Eat(GameObject food)
-    {  
+    {
         _satiety.Increase();
         Destroy(food);
     }

@@ -18,13 +18,13 @@ public class GameInfo : MonoBehaviour
         yield return new WaitForSeconds(delay);
         int totalNum = 0;
         string text = "";
-        for(int i=0; i<objsToCount.Length; ++i)
+        for (int i = 0; i < objsToCount.Length; ++i)
         {
-        var numOfObjects = GameObject.FindGameObjectsWithTag(objsToCount[i].tag).Length;
-        totalNum+=numOfObjects;
-        text+=$"{objNames[i]}: {numOfObjects}\n";
+            var numOfObjects = GameObject.FindGameObjectsWithTag(objsToCount[i].tag).Length;
+            totalNum += numOfObjects;
+            text += $"{objNames[i]}: {numOfObjects}\n";
         }
-        text+=$"Всего сущностей: {totalNum}";
+        text += $"Всего сущностей: {totalNum}";
         SendText(text);
         Start();
     }
