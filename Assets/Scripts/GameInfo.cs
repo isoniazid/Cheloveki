@@ -8,21 +8,24 @@ using UnityEngine;
 public class GameInfo : MonoBehaviour
 {
     [SerializeField] public int delay;
+    [SerializeField] public GameObject[] objsToCount;
+    [SerializeField] public string[] objNames;
     protected delegate void Send(string text);
     protected Send SendText;
 
     IEnumerator EntityLogger()
     {
         yield return new WaitForSeconds(delay);
-        var numOfGoats = GameObject.FindGameObjectsWithTag("Goat").Length;
-        var numOfWolves = GameObject.FindGameObjectsWithTag("Wolf").Length;
-        var numOfDeers = GameObject.FindGameObjectsWithTag("Deer").Length;
-        var numOfBushes = GameObject.FindGameObjectsWithTag("Bush").Length;
-        var numOfBears = GameObject.FindGameObjectsWithTag("Bear").Length;
-        string text = $"Всего сущностей: {numOfGoats + numOfBushes + numOfWolves + numOfDeers+numOfBears}.\n";
-        text += $"Волки: {numOfWolves}.\nМедведи: {numOfBears}.\nКозы: {numOfGoats},\nОлени: {numOfDeers},\nКусты: {numOfBushes}";
+        int totalNum = 0;
+        string text = "";
+        for(int i=0; i<objsToCount.Length; ++i)
+        {
+        var numOfObjects = GameObject.FindGameObjectsWithTag(objsToCount[i].tag).Length;
+        totalNum+=numOfObjects;
+        text+=$"{objNames[i]}: {numOfObjects}\n";
+        }
+        text+=$"Всего сущностей: {totalNum}";
         SendText(text);
-        //Debug.Log($"Всего сущностей: {numOfGoats + numOfBushes+numOfWolves}. Волки: {numOfWolves}. Козы: {numOfGoats}, кусты: {numOfBushes}");
         Start();
     }
 
