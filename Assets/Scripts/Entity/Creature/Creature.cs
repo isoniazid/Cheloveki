@@ -154,14 +154,16 @@ abstract public class Creature : Entity
         //6.5f - Чуть больше 360 градусов в радианах.
         // 0f - это что размер вектора нельзя менять.
         _currentStep = (Vector2)Vector3.RotateTowards(_currentStep, taxisTarget - transform.position, 7f, 0f);
-        //Debug.DrawLine(this.transform.position, transform.position+_currentStep,Color.white,1f);
+        _currentStep = _currentStep.normalized*0.7f;
+        Debug.DrawLine(this.transform.position, transform.position+_currentStep,Color.white,1f);
     }
 
     protected void Taxis(GameObject taxisTarget)
     {
         if (taxisTarget == null) return;
         _currentStep = (Vector2)Vector3.RotateTowards(_currentStep, taxisTarget.transform.position - transform.position, 7f, 0f);
-        //Debug.DrawLine(transform.position, transform.position+_currentStep,Color.white,1f);
+        _currentStep = _currentStep.normalized*0.7f;
+        Debug.DrawLine(transform.position, transform.position+_currentStep,Color.white,1f);
     }
 
     protected void ChangeAnimation(string aanimation)
