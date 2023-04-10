@@ -4,9 +4,8 @@ using UnityEngine;
 
 abstract public class Entity : MonoBehaviour
 {
-
     protected float _timerStart;
-    protected float _timeThreshold = 0.6f; //один игровой час
+    protected float _timeThreshold = TIME_LEN.DEFAULT_TICK;
     public string _name;
     [SerializeField]
 

@@ -6,6 +6,8 @@ using TMPro;
 public static class TIME_LEN
 {
     /*Я по умолчанию выставил у всех юнитов тикер в 1 игровой час*/
+    public const float GAME_MINUTE = 0.001f;
+    public const float DEFAULT_TICK = 0.6f;
     public const int DAYNIGHT_LEN = 24;
     public const int WEEK_LEN = 7 * 24;
     public const int MONTH_LEN = 7 * 4 * 24;
@@ -17,7 +19,7 @@ public class WorldTime : MonoBehaviour
 {
     [SerializeField] TextMeshProUGUI _worldTimeTextLabel;
     private float _timerStart;
-    private float _timeThreshold = 0.01f; //Игровая минута
+    private float _timeThreshold = TIME_LEN.GAME_MINUTE; //Игровая минута
 
     private Period _hour = new Period(60); //Игровой час
 

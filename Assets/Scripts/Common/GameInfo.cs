@@ -10,6 +10,8 @@ public class GameInfo : MonoBehaviour
     [SerializeField] public int delay;
     [SerializeField] public GameObject[] objsToCount;
     [SerializeField] public string[] objNames;
+
+    [SerializeField] public bool logToConsole;
     protected delegate void Send(string text);
     protected Send SendText;
 
@@ -35,7 +37,7 @@ public class GameInfo : MonoBehaviour
     void Start()
     {
         SendText = GameObject.FindGameObjectWithTag("MainUI").GetComponent<InfoText>().ChangeText;
-        SendText += Debug.Log;
+        if(logToConsole) SendText += Debug.Log;
         StartCoroutine(EntityLogger());
     }
 

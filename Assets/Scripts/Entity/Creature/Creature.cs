@@ -28,13 +28,13 @@ public enum DIRECTIONS : int
 
 abstract public class Creature : Entity
 {
-    const bool MALE = true;
-    const bool FEMALE = false;
+    protected const bool MALE = true;
+    protected const bool FEMALE = false;
     //6,5rad ~= 360deg
     public bool gender;
-    [SerializeField] GameObject child; //Объект, создающийся после размножения
+    [SerializeField] public GameObject child; //Объект, создающийся после размножения
     [SerializeField] GameObject corpse; //Объект, создающийся, когда животное умирает
-    
+
     [SerializeField] protected List<GameObject> edibleFood = new List<GameObject>(); //Список того, что можно есть
     protected Vector3 _step_size = new Vector3(0.5f, 0.5f, 0f); //размер шага
     protected Satiety _satiety = new Satiety(); //сытость
@@ -57,6 +57,7 @@ abstract public class Creature : Entity
 
     public override void Start()
     {
+
         base.Start();
         //SendText = GameObject.FindGameObjectWithTag("MainUI").GetComponent<InfoText>().ChangeText;
         System.Random rnd = new System.Random();
@@ -85,22 +86,22 @@ abstract public class Creature : Entity
     ///////////////////////////////////
 
     protected virtual void Eat(GameObject food)
-    {}
+    { }
     //{
-            //_satiety.Increase();
-            //Destroy(collided.gameObject);
+    //_satiety.Increase();
+    //Destroy(collided.gameObject);
     //}
 
     protected virtual void OnTriggerEnter2D(Collider2D collided)
     /*NB В будущем надо будет отвязать события потребностей от коллайдера*/
     {
-        foreach(var collided_food in edibleFood)
+        foreach (var collided_food in edibleFood)
         {
-        if (collided.tag == collided_food.tag && _currentState == STATE.SEEK_FOR_FOOD)
-        {
-            Eat(collided.gameObject);
-            //Debug.Log("Покушал");
-        }
+            if (collided.tag == collided_food.tag && _currentState == STATE.SEEK_FOR_FOOD)
+            {
+                Eat(collided.gameObject);
+                //Debug.Log("Покушал");
+            }
         }
 
         if (collided.tag == tag && _currentState == STATE.SEEK_FOR_PARTNER)
@@ -152,13 +153,15 @@ abstract public class Creature : Entity
         if (taxisTarget == null) return;
         //6.5f - Чуть больше 360 градусов в радианах.
         // 0f - это что размер вектора нельзя менять.
-        _currentStep = Vector3.RotateTowards(_currentStep, taxisTarget - transform.position, 7f, 0f);
+        _currentStep = (Vector2)Vector3.RotateTowards(_currentStep, taxisTarget - transform.position, 7f, 0f);
+        //Debug.DrawLine(this.transform.position, transform.position+_currentStep,Color.white,1f);
     }
 
     protected void Taxis(GameObject taxisTarget)
     {
         if (taxisTarget == null) return;
-        _currentStep = Vector3.RotateTowards(_currentStep, taxisTarget.transform.position - transform.position, 7f, 0f);
+        _currentStep = (Vector2)Vector3.RotateTowards(_currentStep, taxisTarget.transform.position - transform.position, 7f, 0f);
+        //Debug.DrawLine(transform.position, transform.position+_currentStep,Color.white,1f);
     }
 
     protected void ChangeAnimation(string aanimation)
@@ -278,20 +281,20 @@ abstract public class Creature : Entity
     protected GameObject[] FindFood()
     {
         List<GameObject> foodList = new List<GameObject>();
-        foreach(GameObject food_type in edibleFood)
+        foreach (GameObject food_type in edibleFood)
         {
-        GameObject[] food = GameObject.FindGameObjectsWithTag(food_type.tag);
-        if (!(food.Length < 1))
-        {
-        foodList.AddRange(food);
+            GameObject[] food = GameObject.FindGameObjectsWithTag(food_type.tag);
+            if (!(food.Length < 1))
+            {
+                foodList.AddRange(food);
+            }
         }
-        }
-        if(foodList.Count < 1) return null;
-        else return foodList.ToArray(); 
-        
+        if (foodList.Count < 1) return null;
+        else return foodList.ToArray();
+
     }
 
-    protected GameObject[] FindPartners()
+    protected virtual GameObject[] FindPartners()
     {
         GameObject[] partners = GameObject.FindGameObjectsWithTag(tag);
         List<GameObject> tmp = new List<GameObject>(); //Временный список...
