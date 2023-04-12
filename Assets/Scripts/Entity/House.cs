@@ -8,6 +8,7 @@ public class House : Entity
 
     protected override void OnMouseDown()
     {
+        messageText = "";
         messageText += $"Это: {name}\n";
         messageText += $"Жильцы:\n";
         foreach (var human in inhabitors) messageText += $"{human.firstName} {human.lastName}";

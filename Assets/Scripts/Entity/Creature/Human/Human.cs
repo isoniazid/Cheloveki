@@ -4,10 +4,16 @@ using UnityEngine;
 
 public class Human : Omivorous
 {
+#nullable enable
+    public Human? spouse = null;
+
+#nullable disable
     public string firstName { get; set; }
     private string _firstNameMeaning { get; set; }
     public string lastName { get; set; }
     private string _lastNameMeaning { get; set; }
+
+    private House _home;
     [SerializeField] public GameObject startHome;
     [SerializeField] public RuntimeAnimatorController[] genderAnimatorController;
 
@@ -36,8 +42,8 @@ public class Human : Omivorous
         message += $"Порог сытости: {_satiety.ThresholdPercent()}%\n";
         message += $"Секс: {_sexNecessity.CurrentStatePercent()}%\n";
         message += $"Порог для поиска партнера: {_sexNecessity.ThresholdPercent()}%\n";
-        message += $"Дом: {_homeNecessity.CurrentStatePercent()}%\n";
-        message += $"Порог строительства дома: {_homeNecessity.ThresholdPercent()}%\n";
+        message += $"Дом: {(_homeNecessity.CurrentStatePercent() == 100 ? "Есть" : "Нет")}\n";
+        message += $"{GetMarriageStr()}\n";
         SendText(message);
     }
 
@@ -47,9 +53,39 @@ public class Human : Omivorous
     }
 
 
-    ////////////////////////////////////
+    ////////////////////////////////////    
     //Низкоуровневые методы перемещения, смерти и тд
     ///////////////////////////////////
+
+    public Vector3 GetPosition() //NB Если напрямую обращаться к spouse, то spouse.transfrom.position не пашет. пришлось городить костыль
+    {
+        Vector3 pos = transform.position;
+        return pos;
+    }
+
+        protected void Taxis(Human taxisTarget)
+    {
+        if (taxisTarget == null) return;
+        _currentStep = (Vector2)Vector3.RotateTowards(_currentStep, taxisTarget.transform.position - transform.position, 7f, 0f);
+        _currentStep = _currentStep.normalized * 0.7f;
+        //Debug.DrawLine(transform.position, transform.position+_currentStep,Color.white,1f);
+    }
+
+    protected Vector3 FindNearest(Human[] array)
+    {
+        Human nearest = array[0];
+        var nearestDistance = Vector3.Distance(nearest.transform.position, transform.position);
+        foreach (Human currentObj in array)
+        {
+            var currentDistance = Vector3.Distance(currentObj.transform.position, transform.position);
+            if (currentDistance < nearestDistance)
+            {
+                nearestDistance = currentDistance;
+                nearest = currentObj;
+            }
+        }
+        return nearest.transform.position;
+    }
 
     protected GameObject[] FindHomes()
     {
@@ -60,7 +96,38 @@ public class Human : Omivorous
 
     private void BuildHome()
     {
-        Instantiate(startHome, transform.position, Quaternion.identity);
+        _home = Instantiate(startHome, transform.position, Quaternion.identity).GetComponent<House>();
+        _home.inhabitors.Add(this);
+    }
+
+    private void Marry(Human humanToMarry)
+    {
+        spouse = humanToMarry;
+    }
+
+    private string GetMarriageStr()
+    {
+        if (gender == FEMALE)
+        {
+            if (spouse == null)
+            {
+                return "Не замужем";
+            }
+
+            else return $"Замужем за {spouse.firstName} {spouse.lastName}";
+        }
+
+        else
+        {
+            if (spouse == null)
+            {
+                return "Не женат";
+            }
+
+            else return $"Женат на {spouse.firstName} {spouse.lastName}";
+
+        }
+
     }
 
     protected override void OnTriggerEnter2D(Collider2D collided)
@@ -77,26 +144,24 @@ public class Human : Omivorous
 
         if (collided.tag == tag && _currentState == STATE.SEEK_FOR_PARTNER)
         {
-            //Debug.Log("Вот вот начнется...");
+
             var partnerScript = collided.GetComponent<Human>();
 
-            if (partnerScript.gender != gender && partnerScript._currentState == STATE.SEEK_FOR_PARTNER)
+
+
+            if (spouse == null && partnerScript._currentState == STATE.SEEK_FOR_PARTNER && partnerScript.gender != gender)
             {
-                /*NB обратите внимание, что я обращаюсь к скрипту партнера, а тут могут быть проблемы, о которых
-                я уже писал в FindPartners.
+                Marry(partnerScript);
+            }
 
-                Более того, я не проверяю, что это именно тот партнер, который был в getPartners, возможно,
-                одна хорни коза столкнулась с другой хорни козой, которые шли к третьей, но это, я думаю, неважно, главное, что все счастливы
-                И да, НИКАКОГО ХАРАССМЕНТА! Партнер тоже должен хотеть близости*/
+            else if (spouse != partnerScript) return;
 
-                //Debug.Log("Ура давай ебаться!");
-                _sexNecessity.Increase();
-                if (gender == MALE)
+            else
+            {
+                if (partnerScript.gender != gender && partnerScript._currentState == STATE.SEEK_FOR_PARTNER)
                 {
-                    /*NB Спавн детей происходит только если объект мужского пола.
-                    Связано это с тем, что коллизия происходит и  у самки, и у самца, и если этого условия не будет,
-                    то сгенерируются два ребенка. Возможно, это костыль*/
-                    Instantiate(child, transform.position, Quaternion.identity);
+                    _sexNecessity.Increase();
+                    if (gender == MALE) Instantiate(child, transform.position, Quaternion.identity); //NB smotri class Creature
                 }
             }
         }
@@ -171,8 +236,13 @@ public class Human : Omivorous
                 break;
 
             case STATE.SEEK_FOR_PARTNER:
-                var partners = FindPartners();
-                if (partners != null) Taxis(FindNearest(partners));
+                if (spouse != null) Taxis(spouse.GetPosition());
+
+                else
+                {
+                    var partners = FindPartners();
+                    if (partners != null) Taxis(FindNearest(partners));
+                }
                 break;
 
             case STATE.SEEK_FOR_HOMEPLACE:
@@ -180,20 +250,22 @@ public class Human : Omivorous
                 if (homes != null)
                 {
                     var nearest = FindNearest(homes);
-                    if (Vector3.Distance(transform.position, nearest) < 1.5f && Vector3.Distance(transform.position, nearest) > 1f) //NB Магические числа!
+                    if (Vector3.Distance(transform.position, nearest) < 1f && Vector3.Distance(transform.position, nearest) > 0.7f) //NB Магические числа!
                     {
                         BuildHome();
                         _homeNecessity.Increase();
                         _homeNecessity.locked = true;
                     }
 
-                    else if (Vector3.Distance(transform.position, nearest) < 1f) Antitaxis(nearest);
+                    else if (Vector3.Distance(transform.position, nearest) < 0.7f) Antitaxis(nearest);
 
                     else Taxis(nearest);
                 }
                 else
                 {
                     BuildHome();
+                    _homeNecessity.Increase();
+                    _homeNecessity.locked = true;
                 }
 
                 break;
