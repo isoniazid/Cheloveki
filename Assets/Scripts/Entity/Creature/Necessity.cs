@@ -42,8 +42,8 @@ using UnityEngine;
 enum PRIORITY : int { PHISIOLOGICAL, SAFETY, SOCIAL, RULE, CREATIVITY, HEDONISM, GOD };
 public abstract class Necessity
 {
-
-    public string _name;
+    public bool locked = false;
+    public string name;
     public int _priority;
     protected int _maxLevel; //Максимальный уровень потребности. Чем выше - тем дольше она будет снижаться
     protected int _minGenLevel = 60; //минимальное значение для генератора
@@ -72,7 +72,7 @@ public abstract class Necessity
     public bool isSatisfied()
     /*Если потребность ниже некоего порога, то она не удовлетворена, и нужно это исправить*/
     {
-        if (currentState < _thresholdLevel)
+        if (currentState <= _thresholdLevel)
         {
             return false;
         }
@@ -98,11 +98,14 @@ public abstract class Necessity
 
     public void Increase(int val)
     {
-        if (currentState + val < _maxLevel)
+        if (!locked)
         {
-            currentState += val;
+            if (currentState + val < _maxLevel)
+            {
+                currentState += val;
+            }
+            else currentState = _maxLevel;
         }
-        else currentState = _maxLevel;
     }
 
     public virtual void Increase()
@@ -117,11 +120,14 @@ public abstract class Necessity
 
     public void Decrease(int val)
     {
-        if (currentState - val >= 0)
+        if (!locked)
         {
-            currentState -= val;
+            if (currentState - val >= 0)
+            {
+                currentState -= val;
+            }
+            else currentState = 0;
         }
-        else currentState = 0;
     }
 
 }
@@ -129,33 +135,49 @@ public abstract class Necessity
 
 public class Satiety : Necessity
 {
-    public new int _priority = (int)PRIORITY.PHISIOLOGICAL;
+     
     //На старте максимально сыт
     public Satiety() : base()
     {
-        _name = "Сытость";
+        name = "Сытость";
+        _priority = (int)PRIORITY.PHISIOLOGICAL;
     }
 
     public Satiety(int min, int max) : base(min, max)
     {
-        _name = "Сытость";
+        name = "Сытость";
+        _priority = (int)PRIORITY.PHISIOLOGICAL;
 
     }
 }
 
 public class SexNecessity : Necessity
 {
-    public new int _priority = (int)PRIORITY.PHISIOLOGICAL;
 
     public SexNecessity() : base()
     {
-        _name = "Секс";
+        name = "Секс";
+        _priority = (int)PRIORITY.PHISIOLOGICAL;
     }
 
     public SexNecessity(int min, int max) : base(min, max)
     {
-        _name = "Секс";
+        name = "Секс";
+        _priority = (int)PRIORITY.PHISIOLOGICAL;
     }
+}
+
+public class HomeNecessity: Necessity
+{
+
+    public HomeNecessity()
+    {
+        name = "Наличие дома";
+        _thresholdLevel = 0;
+        _maxLevel = 1;
+        currentState = _maxLevel;
+    }
+    
 }
 
 
@@ -164,7 +186,7 @@ public class SexNecessity : Necessity
     public SleepNecessity()
     {
         var rndGen = new System.Random();
-        _name = "Сон";
+        name = "Сон";
         _priority = rndGen.Next(safetyPriority,phisiologicalPriority);
     }
 } */

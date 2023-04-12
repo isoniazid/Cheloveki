@@ -21,7 +21,7 @@ public class Omivorous : Animal
     protected override void OnMouseDown()
     {
         string message = "";
-        message += $"Это всеядное животное: {_name}\n";
+        message += $"Это всеядное животное: {name}\n";
         message += $"Пол: {GetGenderStr()}\n";
         message += $"Позиция: {transform.position}\n";
         message += $"Сытость: {_satiety.CurrentStatePercent()}%\n";

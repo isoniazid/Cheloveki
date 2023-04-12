@@ -14,7 +14,7 @@ public class Predator : Animal
     protected override void OnMouseDown()
     {
         string message = "";
-        message += $"Это плотоядное животное: {_name}\n";
+        message += $"Это плотоядное животное: {name}\n";
         message += $"Пол: {GetGenderStr()}\n";
         message += $"Позиция: {transform.position}\n";
         message += $"Сытость: {_satiety.CurrentStatePercent()}%\n";

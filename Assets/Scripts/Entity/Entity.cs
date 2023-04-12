@@ -4,9 +4,10 @@ using UnityEngine;
 
 abstract public class Entity : MonoBehaviour
 {
+    [SerializeField] public List<GameObject> Inventory = new List<GameObject>();
     protected float _timerStart;
     protected float _timeThreshold = TIME_LEN.DEFAULT_TICK;
-    public string _name;
+    public new string name;
     [SerializeField]
 
     /*NB я еще пока учусь разбираться с делегатами, но думаю, что запихнуть их сюда будет в тему*/
@@ -29,7 +30,7 @@ abstract public class Entity : MonoBehaviour
     protected virtual void OnMouseDown()
     {
         messageText = "";
-        messageText += "Это сущность";
+        messageText += $"Это сущность: {name}";
         SendText(messageText);
         //Debug.Log("Это сущность");
 

@@ -13,7 +13,7 @@ public class Herbivorous : Animal
     protected override void OnMouseDown()
     {
         string message = "";
-        message += $"Это травоядное животное: {_name}\n";
+        message += $"Это травоядное животное: {name}\n";
         message += $"Пол: {GetGenderStr()}\n";
         message += $"Позиция: {transform.position}\n";
         message += $"Сытость: {_satiety.CurrentStatePercent()}%\n";

@@ -23,7 +23,7 @@ public abstract class Animal : Creature
     protected override void OnMouseDown()
     {
         string message = "";
-        message += $"Это животное: {_name}\n";
+        message += $"Это животное: {name}\n";
         message += $"Пол: {GetGenderStr()}\n";
         message += $"Позиция: {transform.position}\n";
         message += $"Сытость: {_satiety.CurrentStatePercent()}%\n";

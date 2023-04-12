@@ -44,13 +44,6 @@ abstract public class Creature : Entity
     protected Vector3 _currentStep = new Vector3(0.5f, 0.5f, 0f);
     public STATE _currentState = STATE.CHILL; //Текущее состояние. По умолчанию - бродить без дела
 
-    public enum STATE : int
-    {
-        CHILL,
-        SEEK_FOR_FOOD,
-        SEEK_FOR_PARTNER
-    };
-
     ////////////////////////////////////
     //Конструктор и взаимодействие с пользователем
     ///////////////////////////////////
@@ -107,7 +100,7 @@ abstract public class Creature : Entity
         if (collided.tag == tag && _currentState == STATE.SEEK_FOR_PARTNER)
         {
             //Debug.Log("Вот вот начнется...");
-            var partnerScript = collided.GetComponent<Animal>();
+            var partnerScript = collided.GetComponent<Creature>();
 
             if (partnerScript.gender != gender && partnerScript._currentState == STATE.SEEK_FOR_PARTNER)
             {
@@ -144,8 +137,18 @@ abstract public class Creature : Entity
                 nearest = currentObj;
             }
         }
-        //Debug.Log($"Nearest bush {nearest.transform.position}");
         return nearest.transform.position;
+    }
+
+    protected void Antitaxis(Vector3 antiTaxisTarget)
+    {
+        if (antiTaxisTarget == null) return;
+        //6.5f - Чуть больше 360 градусов в радианах.
+        // 0f - это что размер вектора нельзя менять.
+        _currentStep = (Vector2)Vector3.RotateTowards(_currentStep, antiTaxisTarget - transform.position, -7f, 0f);
+        _currentStep = _currentStep.normalized * 0.7f;
+        //Debug.DrawLine(this.transform.position, transform.position+_currentStep,Color.white,1f);
+
     }
     protected void Taxis(Vector3 taxisTarget)
     /*Вектор шага поворачивается в сторону объекта, к которому надо идти...*/
@@ -154,7 +157,7 @@ abstract public class Creature : Entity
         //6.5f - Чуть больше 360 градусов в радианах.
         // 0f - это что размер вектора нельзя менять.
         _currentStep = (Vector2)Vector3.RotateTowards(_currentStep, taxisTarget - transform.position, 7f, 0f);
-        _currentStep = _currentStep.normalized*0.7f;
+        _currentStep = _currentStep.normalized * 0.7f;
         //Debug.DrawLine(this.transform.position, transform.position+_currentStep,Color.white,1f);
     }
 
@@ -162,7 +165,7 @@ abstract public class Creature : Entity
     {
         if (taxisTarget == null) return;
         _currentStep = (Vector2)Vector3.RotateTowards(_currentStep, taxisTarget.transform.position - transform.position, 7f, 0f);
-        _currentStep = _currentStep.normalized*0.7f;
+        _currentStep = _currentStep.normalized * 0.7f;
         //Debug.DrawLine(transform.position, transform.position+_currentStep,Color.white,1f);
     }
 

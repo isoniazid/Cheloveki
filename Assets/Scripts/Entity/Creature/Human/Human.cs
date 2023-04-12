@@ -4,12 +4,14 @@ using UnityEngine;
 
 public class Human : Omivorous
 {
-    private string _firstName { get; set; }
+    public string firstName { get; set; }
     private string _firstNameMeaning { get; set; }
-    private string _lastName { get; set; }
+    public string lastName { get; set; }
     private string _lastNameMeaning { get; set; }
+    [SerializeField] public GameObject startHome;
     [SerializeField] public RuntimeAnimatorController[] genderAnimatorController;
 
+    private HomeNecessity _homeNecessity = new HomeNecessity();
 
     ////////////////////////////////////
     //Конструктор и взаимодействие с пользователем
@@ -18,22 +20,24 @@ public class Human : Omivorous
     public override void Start()
     {
         base.Start();
-        (_firstNameMeaning, _firstName) = Namer.MakeName(3);
-        (_lastNameMeaning, _lastName) = Namer.MakeName(3);
+        (_firstNameMeaning, firstName) = Namer.MakeName(3);
+        (_lastNameMeaning, lastName) = Namer.MakeName(3);
         _animator.runtimeAnimatorController = gender ? genderAnimatorController[0] : genderAnimatorController[1];
     }
 
     protected override void OnMouseDown()
     {
         string message = "";
-        message += $"Это человек: {_name}\n";
-        message += $"{_firstName} {_lastName}\n";
+        message += $"Это человек: {name}\n";
+        message += $"{firstName} {lastName}\n";
         message += $"Пол: {GetGenderStr()}\n";
         message += $"Позиция: {transform.position}\n";
         message += $"Сытость: {_satiety.CurrentStatePercent()}%\n";
         message += $"Порог сытости: {_satiety.ThresholdPercent()}%\n";
         message += $"Секс: {_sexNecessity.CurrentStatePercent()}%\n";
         message += $"Порог для поиска партнера: {_sexNecessity.ThresholdPercent()}%\n";
+        message += $"Дом: {_homeNecessity.CurrentStatePercent()}%\n";
+        message += $"Порог строительства дома: {_homeNecessity.ThresholdPercent()}%\n";
         SendText(message);
     }
 
@@ -46,6 +50,18 @@ public class Human : Omivorous
     ////////////////////////////////////
     //Низкоуровневые методы перемещения, смерти и тд
     ///////////////////////////////////
+
+    protected GameObject[] FindHomes()
+    {
+        GameObject[] homes = GameObject.FindGameObjectsWithTag("House"); //NB когда появятся другие постройки, переделай
+        if (homes.Length < 1) return null;
+        return homes;
+    }
+
+    private void BuildHome()
+    {
+        Instantiate(startHome, transform.position, Quaternion.identity);
+    }
 
     protected override void OnTriggerEnter2D(Collider2D collided)
     /*NB В будущем надо будет отвязать события потребностей от коллайдера*/
@@ -91,4 +107,97 @@ public class Human : Omivorous
     //Высокоуровневая логика и поведение
     ///////////////////////////////////
 
+    protected override void CheckNecessities()
+    /*Проверка потребностей. Если есть неудовлетворенные потребности, состояние животного изменится, и оно начнет их удовлетворять*/
+    {
+        if (!_satiety.isSatisfied())
+        {
+            if (!_satiety.IsCritical())
+            {
+                _currentState = STATE.SEEK_FOR_FOOD;
+                return;
+            }
+            else
+            {
+                Die();
+            }
+        }
+
+        if (!_homeNecessity.isSatisfied())
+        {
+            _currentState = STATE.SEEK_FOR_HOMEPLACE;
+            return;
+        }
+
+        if (!_sexNecessity.isSatisfied())
+        {
+            if (!_satiety.IsCritical())
+            {
+                _currentState = STATE.SEEK_FOR_PARTNER;
+                return;
+            }
+            else
+            {
+                /*NB ЕЩЕ не допилил, что делать, если долго не сексил*/
+                Debug.Log("Forever alone...");
+            }
+        }
+
+        _currentState = STATE.CHILL;
+    }
+
+    protected override void UpdateNecessities(bool ready)
+    {
+        base.UpdateNecessities(ready);
+
+        if (ready) _homeNecessity.Decrease();
+    }
+
+    protected override void HandleState(bool ready)
+    { /*В зависимости от состояния изменяется логика, по которой существо куда-то идет*/
+        if (!ready) return;
+
+        switch (_currentState)
+        {
+            case STATE.CHILL:
+                Wobble();
+                break;
+
+            case STATE.SEEK_FOR_FOOD:
+                //Debug.Log("I am hungry!");
+                var food = FindFood();
+                if (food != null) Taxis(FindNearest(food));
+                else _currentState = STATE.CHILL;
+                break;
+
+            case STATE.SEEK_FOR_PARTNER:
+                var partners = FindPartners();
+                if (partners != null) Taxis(FindNearest(partners));
+                break;
+
+            case STATE.SEEK_FOR_HOMEPLACE:
+                var homes = FindHomes();
+                if (homes != null)
+                {
+                    var nearest = FindNearest(homes);
+                    if (Vector3.Distance(transform.position, nearest) < 1.5f && Vector3.Distance(transform.position, nearest) > 1f) //NB Магические числа!
+                    {
+                        BuildHome();
+                        _homeNecessity.Increase();
+                        _homeNecessity.locked = true;
+                    }
+
+                    else if (Vector3.Distance(transform.position, nearest) < 1f) Antitaxis(nearest);
+
+                    else Taxis(nearest);
+                }
+                else
+                {
+                    BuildHome();
+                }
+
+                break;
+        }
+
+    }
 }

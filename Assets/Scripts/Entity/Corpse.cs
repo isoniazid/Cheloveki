@@ -38,7 +38,7 @@ public class Corpse : Entity
     protected override void OnMouseDown()
     {
         string message = "";
-        message +=$"Это труп: {_name}";
+        message +=$"Это труп: {name}";
         SendText(message);
     }
 
