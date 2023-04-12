@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Human : Creature
+public class Human : Omivorous
 {
     private string _firstName { get; set; }
     private string _firstNameMeaning { get; set; }
@@ -86,40 +86,9 @@ public class Human : Creature
         }
     }
 
-    protected override void Eat(GameObject food)
-    {
-        _satiety.Increase();
-        if (food.tag == "Bush") Destroy(food);
-
-        else
-        {
-            var eatenAnimalScript = food.GetComponent<Animal>();
-            eatenAnimalScript.Die();
-        }
-    }
-
 
     ////////////////////////////////////
     //Высокоуровневая логика и поведение
     ///////////////////////////////////
-
-
-    protected override GameObject[] FindPartners()
-    {
-        GameObject[] partners = GameObject.FindGameObjectsWithTag(tag);
-        List<GameObject> tmp = new List<GameObject>(); //Временный список...
-        foreach (var partner in partners)
-        {
-            var partnerScript = partner.GetComponent<Human>();//NB вот здесь могут возникнуть проблемы...
-            //...Если я чето в названии скрипта, или сделаю наследование, надо будет поменять Анимал на Human или Creature
-            if (partnerScript.gender != gender)//Если пол партнера не сопадает с твоим....
-            {
-                tmp.Add(partner);//Ура!
-            }
-        }
-        partners = tmp.ToArray();
-        if (partners.Length < 1) return null;
-        return partners;
-    }
 
 }

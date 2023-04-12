@@ -12,7 +12,7 @@ public class Omivorous : Animal
         
         else
         {
-            var eatenAnimalScript = food.GetComponent<Animal>();
+            var eatenAnimalScript = food.GetComponent<Creature>();
             eatenAnimalScript.Die();
         }
     }

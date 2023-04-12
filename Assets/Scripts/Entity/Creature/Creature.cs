@@ -155,7 +155,7 @@ abstract public class Creature : Entity
         // 0f - это что размер вектора нельзя менять.
         _currentStep = (Vector2)Vector3.RotateTowards(_currentStep, taxisTarget - transform.position, 7f, 0f);
         _currentStep = _currentStep.normalized*0.7f;
-        Debug.DrawLine(this.transform.position, transform.position+_currentStep,Color.white,1f);
+        //Debug.DrawLine(this.transform.position, transform.position+_currentStep,Color.white,1f);
     }
 
     protected void Taxis(GameObject taxisTarget)
@@ -163,7 +163,7 @@ abstract public class Creature : Entity
         if (taxisTarget == null) return;
         _currentStep = (Vector2)Vector3.RotateTowards(_currentStep, taxisTarget.transform.position - transform.position, 7f, 0f);
         _currentStep = _currentStep.normalized*0.7f;
-        Debug.DrawLine(transform.position, transform.position+_currentStep,Color.white,1f);
+        //Debug.DrawLine(transform.position, transform.position+_currentStep,Color.white,1f);
     }
 
     protected void ChangeAnimation(string aanimation)
@@ -302,7 +302,7 @@ abstract public class Creature : Entity
         List<GameObject> tmp = new List<GameObject>(); //Временный список...
         foreach (var partner in partners)
         {
-            var partnerScript = partner.GetComponent<Animal>();//NB вот здесь могут возникнуть проблемы...
+            var partnerScript = partner.GetComponent<Creature>();//NB вот здесь могут возникнуть проблемы...
             //...Если я чето в названии скрипта, или сделаю наследование, надо будет поменять Анимал на Human или Creature
             if (partnerScript.gender != gender)//Если пол партнера не сопадает с твоим....
             {

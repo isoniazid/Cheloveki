@@ -7,7 +7,7 @@ public class Predator : Animal
     protected override void Eat(GameObject food)
     {
         _satiety.Increase();
-        var eatenAnimalScript = food.GetComponent<Animal>();
+        var eatenAnimalScript = food.GetComponent<Creature>();
         eatenAnimalScript.Die();
     }
 
