@@ -13,7 +13,10 @@ public class Human : Omivorous
     public string lastName { get; set; }
     private string _lastNameMeaning { get; set; }
 
-    private House _home;
+#nullable enable
+    private House? _home = null;
+
+#nullable disable
     [SerializeField] public GameObject startHome;
     [SerializeField] public RuntimeAnimatorController[] genderAnimatorController;
 
@@ -26,6 +29,7 @@ public class Human : Omivorous
     public override void Start()
     {
         base.Start();
+        name = "человек:";
         (_firstNameMeaning, firstName) = Namer.MakeName(3);
         (_lastNameMeaning, lastName) = Namer.MakeName(3);
         _animator.runtimeAnimatorController = gender ? genderAnimatorController[0] : genderAnimatorController[1];
@@ -34,8 +38,9 @@ public class Human : Omivorous
     protected override void OnMouseDown()
     {
         string message = "";
-        message += $"Это человек: {name}\n";
+        message += $"Это {name}\n";
         message += $"{firstName} {lastName}\n";
+        message += $"{GetStateStr()}\n";
         message += $"Пол: {GetGenderStr()}\n";
         message += $"Позиция: {transform.position}\n";
         message += $"Сытость: {_satiety.CurrentStatePercent()}%\n";
@@ -77,6 +82,27 @@ public class Human : Omivorous
 
     }
 
+    private string GetStateStr()
+    {
+        switch(_currentState)
+        {
+            case STATE.SEEK_FOR_FOOD:
+            return "Ищет еду";
+
+            case STATE.SEEK_FOR_PARTNER:
+            if(spouse!=null) return "Собирается исполнять супружеский долг";
+            return "Ищет любви";
+
+            case STATE.SEEK_FOR_HOMEPLACE:
+            return "Ищет место для жилья";
+
+            case STATE.CHILL:
+            return "Бродит без дела";
+
+            default:
+            return "НЕИЗВЕСТНОЕ СОСТОЯНИЕ";
+        }
+    }
     ////////////////////////////////////    
     //Низкоуровневые методы перемещения, смерти и тд
     ///////////////////////////////////
@@ -88,10 +114,19 @@ public class Human : Omivorous
         return homes;
     }
 
+    public void SetHome(House newHome)
+    {
+        if (_home != null)
+        {
+            _home.RemoveInhabitor(this);
+        }
+        _home = newHome;
+        _home.AddInhabitor(this);
+    }
+
     private void BuildHome()
     {
-        _home = Instantiate(startHome, transform.position, Quaternion.identity).GetComponent<House>();
-        _home.inhabitors.Add(this);
+        SetHome(Instantiate(startHome, transform.position, Quaternion.identity).GetComponent<House>());
     }
 
     private bool CanMarry(GameObject humanToMarry)
@@ -111,11 +146,12 @@ public class Human : Omivorous
         if (gender == MALE)
         {
             this.spouse = humanToMarry;
-            this.spouse.GetComponent<Human>().spouse = this.gameObject;
+
+            var spouseScript = this.spouse.GetComponent<Human>();
+            spouseScript.spouse = this.gameObject;
+            spouseScript.SetHome(this._home);
         }
     }
-
-
 
     protected override void OnTriggerEnter2D(Collider2D collided)
     /*NB В будущем надо будет отвязать события потребностей от коллайдера*/
@@ -172,8 +208,7 @@ public class Human : Omivorous
         List<GameObject> tmp = new List<GameObject>(); //Временный список...
         foreach (var partner in partners)
         {
-            var partnerScript = partner.GetComponent<Human>();//NB вот здесь могут возникнуть проблемы...
-            //...Если я чето в названии скрипта, или сделаю наследование, надо будет поменять Анимал на Human или Creature
+            var partnerScript = partner.GetComponent<Human>();
             if (partnerScript.gender != gender && partnerScript.spouse == null)//Если пол партнера не сопадает с твоим, и у него нет супруга..
             {
                 tmp.Add(partner);//Ура!
