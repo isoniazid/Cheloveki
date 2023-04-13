@@ -5,7 +5,7 @@ using UnityEngine;
 public class Human : Omivorous
 {
 #nullable enable
-    public Human? spouse = null;
+    public GameObject? spouse = null;
 
 #nullable disable
     public string firstName { get; set; }
@@ -52,40 +52,34 @@ public class Human : Omivorous
         return gender ? "Мужской" : "Женский";
     }
 
+    private string GetMarriageStr()
+    {
+        if (gender == FEMALE)
+        {
+            if (spouse == null)
+            {
+                return "Не замужем";
+            }
+
+            else return $"Замужем за {spouse.GetComponent<Human>().firstName} {spouse.GetComponent<Human>().lastName}";
+        }
+
+        else
+        {
+            if (spouse == null)
+            {
+                return "Не женат";
+            }
+
+            else return $"Женат на {spouse.GetComponent<Human>().firstName} {spouse.GetComponent<Human>().lastName}";
+
+        }
+
+    }
 
     ////////////////////////////////////    
     //Низкоуровневые методы перемещения, смерти и тд
     ///////////////////////////////////
-
-    public Vector3 GetPosition() //NB Если напрямую обращаться к spouse, то spouse.transfrom.position не пашет. пришлось городить костыль
-    {
-        Vector3 pos = transform.position;
-        return pos;
-    }
-
-        protected void Taxis(Human taxisTarget)
-    {
-        if (taxisTarget == null) return;
-        _currentStep = (Vector2)Vector3.RotateTowards(_currentStep, taxisTarget.transform.position - transform.position, 7f, 0f);
-        _currentStep = _currentStep.normalized * 0.7f;
-        //Debug.DrawLine(transform.position, transform.position+_currentStep,Color.white,1f);
-    }
-
-    protected Vector3 FindNearest(Human[] array)
-    {
-        Human nearest = array[0];
-        var nearestDistance = Vector3.Distance(nearest.transform.position, transform.position);
-        foreach (Human currentObj in array)
-        {
-            var currentDistance = Vector3.Distance(currentObj.transform.position, transform.position);
-            if (currentDistance < nearestDistance)
-            {
-                nearestDistance = currentDistance;
-                nearest = currentObj;
-            }
-        }
-        return nearest.transform.position;
-    }
 
     protected GameObject[] FindHomes()
     {
@@ -100,77 +94,95 @@ public class Human : Omivorous
         _home.inhabitors.Add(this);
     }
 
-    private void Marry(Human humanToMarry)
+    private bool CanMarry(GameObject humanToMarry)
     {
-        spouse = humanToMarry;
+        var humanScript = humanToMarry.GetComponent<Human>();
+
+        if (humanScript._currentState == STATE.SEEK_FOR_PARTNER
+        && spouse == null
+        && humanScript.gender != this.gender
+        && humanScript.spouse == null) return true;
+
+        return false;
     }
 
-    private string GetMarriageStr()
+    private void Marry(GameObject humanToMarry)
     {
-        if (gender == FEMALE)
+        if (gender == MALE)
         {
-            if (spouse == null)
-            {
-                return "Не замужем";
-            }
-
-            else return $"Замужем за {spouse.firstName} {spouse.lastName}";
+            this.spouse = humanToMarry;
+            this.spouse.GetComponent<Human>().spouse = this.gameObject;
         }
-
-        else
-        {
-            if (spouse == null)
-            {
-                return "Не женат";
-            }
-
-            else return $"Женат на {spouse.firstName} {spouse.lastName}";
-
-        }
-
     }
+
+
 
     protected override void OnTriggerEnter2D(Collider2D collided)
     /*NB В будущем надо будет отвязать события потребностей от коллайдера*/
     {
-        foreach (var collided_food in edibleFood)
+
+        if (_currentState == STATE.SEEK_FOR_FOOD) //NB yнемного оптимизировал!
         {
-            if (collided.tag == collided_food.tag && _currentState == STATE.SEEK_FOR_FOOD)
+            foreach (var collided_food in edibleFood)
             {
-                Eat(collided.gameObject);
-                //Debug.Log("Покушал");
-            }
-        }
-
-        if (collided.tag == tag && _currentState == STATE.SEEK_FOR_PARTNER)
-        {
-
-            var partnerScript = collided.GetComponent<Human>();
-
-
-
-            if (spouse == null && partnerScript._currentState == STATE.SEEK_FOR_PARTNER && partnerScript.gender != gender)
-            {
-                Marry(partnerScript);
-            }
-
-            else if (spouse != partnerScript) return;
-
-            else
-            {
-                if (partnerScript.gender != gender && partnerScript._currentState == STATE.SEEK_FOR_PARTNER)
+                if (collided.tag == collided_food.tag)
                 {
-                    _sexNecessity.Increase();
-                    if (gender == MALE) Instantiate(child, transform.position, Quaternion.identity); //NB smotri class Creature
+                    Eat(collided.gameObject);
+                    //Debug.Log("Покушал");
                 }
             }
         }
+
+        if (collided.tag == tag && _currentState == STATE.SEEK_FOR_PARTNER) //если это человек...
+        {
+
+            if (CanMarry(collided.gameObject))
+            {
+                Marry(collided.gameObject);
+            }
+
+            if (collided.gameObject == spouse)
+            {
+                _sexNecessity.Increase();
+                if (gender == MALE)
+                {
+                    /*NB Спавн детей происходит только если объект мужского пола.
+                    Связано это с тем, что коллизия происходит и  у самки, и у самца, и если этого условия не будет,
+                    то сгенерируются два ребенка. Возможно, это костыль*/
+                    var kid = Instantiate(child, transform.position, Quaternion.identity);
+
+
+                    var kidScript = kid.GetComponent<Human>(); //Какого-то черта потомки создаются тоже с супругами....
+                    kidScript.spouse = null;
+                }
+            }
+
+        }
+
     }
 
 
     ////////////////////////////////////
     //Высокоуровневая логика и поведение
     ///////////////////////////////////
+
+    protected override GameObject[] FindPartners()
+    {
+        GameObject[] partners = GameObject.FindGameObjectsWithTag(tag);
+        List<GameObject> tmp = new List<GameObject>(); //Временный список...
+        foreach (var partner in partners)
+        {
+            var partnerScript = partner.GetComponent<Human>();//NB вот здесь могут возникнуть проблемы...
+            //...Если я чето в названии скрипта, или сделаю наследование, надо будет поменять Анимал на Human или Creature
+            if (partnerScript.gender != gender && partnerScript.spouse == null)//Если пол партнера не сопадает с твоим, и у него нет супруга..
+            {
+                tmp.Add(partner);//Ура!
+            }
+        }
+        partners = tmp.ToArray();
+        if (partners.Length < 1) return null;
+        return partners;
+    }
 
     protected override void CheckNecessities()
     /*Проверка потребностей. Если есть неудовлетворенные потребности, состояние животного изменится, и оно начнет их удовлетворять*/
@@ -236,12 +248,18 @@ public class Human : Omivorous
                 break;
 
             case STATE.SEEK_FOR_PARTNER:
-                if (spouse != null) Taxis(spouse.GetPosition());
+                if (spouse != null)
+                {
+                    Taxis(spouse);
+                    //Debug.Log("Партнер есть, поэтому иду к нему");
+                }
 
                 else
                 {
-                    var partners = FindPartners();
-                    if (partners != null) Taxis(FindNearest(partners));
+                    var potentialPartners = FindPartners();
+                    if (potentialPartners != null) Taxis(FindNearest(potentialPartners));
+                    else _currentState = STATE.CHILL;
+                    //Debug.Log("Партнера нет, иду к кому есть");
                 }
                 break;
 
