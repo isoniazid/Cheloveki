@@ -13,6 +13,8 @@ public class Human : Omivorous
     public string lastName { get; set; }
     private string _lastNameMeaning { get; set; }
 
+    private const int MAX_WEIGHT = 100; // Потом можно будет более гибко настроить
+
 #nullable enable
     private House? _home = null;
 
@@ -84,51 +86,27 @@ public class Human : Omivorous
 
     private string GetStateStr()
     {
-        switch(_currentState)
+        switch (_currentState)
         {
             case STATE.SEEK_FOR_FOOD:
-            return "Ищет еду";
+                return "Ищет еду";
 
             case STATE.SEEK_FOR_PARTNER:
-            if(spouse!=null) return "Собирается исполнять супружеский долг";
-            return "Ищет любви";
+                if (spouse != null) return "Собирается исполнять супружеский долг";
+                return "Ищет любви";
 
             case STATE.SEEK_FOR_HOMEPLACE:
-            return "Ищет место для жилья";
+                return "Ищет место для жилья";
 
             case STATE.CHILL:
-            return "Бродит без дела";
+                return "Бродит без дела";
 
             default:
-            return "НЕИЗВЕСТНОЕ СОСТОЯНИЕ";
+                return "НЕИЗВЕСТНОЕ СОСТОЯНИЕ";
         }
     }
-    ////////////////////////////////////    
-    //Низкоуровневые методы перемещения, смерти и тд
-    ///////////////////////////////////
 
-    protected GameObject[] FindHomes()
-    {
-        GameObject[] homes = GameObject.FindGameObjectsWithTag("House"); //NB когда появятся другие постройки, переделай
-        if (homes.Length < 1) return null;
-        return homes;
-    }
-
-    public void SetHome(House newHome)
-    {
-        if (_home != null)
-        {
-            _home.RemoveInhabitor(this);
-        }
-        _home = newHome;
-        _home.AddInhabitor(this);
-    }
-
-    private void BuildHome()
-    {
-        SetHome(Instantiate(startHome, transform.position, Quaternion.identity).GetComponent<House>());
-    }
-
+    //////////////////Проверки и вычисления параметров////////////////////////
     private bool CanMarry(GameObject humanToMarry)
     {
         var humanScript = humanToMarry.GetComponent<Human>();
@@ -140,85 +118,18 @@ public class Human : Omivorous
 
         return false;
     }
-
-    private void Marry(GameObject humanToMarry)
+    private int CalculateWeight()
     {
-        if (gender == MALE)
-        {
-            this.spouse = humanToMarry;
+        int result = 0;
 
-            var spouseScript = this.spouse.GetComponent<Human>();
-            spouseScript.spouse = this.gameObject;
-            spouseScript.SetHome(this._home);
+        foreach(var item in Inventory)
+        {
+            var itemScript = item.GetComponent<IThing>();
+            result+=itemScript.weight;
         }
+
+        return result;
     }
-
-    protected override void OnTriggerEnter2D(Collider2D collided)
-    /*NB В будущем надо будет отвязать события потребностей от коллайдера*/
-    {
-
-        if (_currentState == STATE.SEEK_FOR_FOOD) //NB yнемного оптимизировал!
-        {
-            foreach (var collided_food in edibleFood)
-            {
-                if (collided.tag == collided_food.tag)
-                {
-                    Eat(collided.gameObject);
-                    //Debug.Log("Покушал");
-                }
-            }
-        }
-
-        if (collided.tag == tag && _currentState == STATE.SEEK_FOR_PARTNER) //если это человек...
-        {
-
-            if (CanMarry(collided.gameObject))
-            {
-                Marry(collided.gameObject);
-            }
-
-            if (collided.gameObject == spouse)
-            {
-                _sexNecessity.Increase();
-                if (gender == MALE)
-                {
-                    /*NB Спавн детей происходит только если объект мужского пола.
-                    Связано это с тем, что коллизия происходит и  у самки, и у самца, и если этого условия не будет,
-                    то сгенерируются два ребенка. Возможно, это костыль*/
-                    var kid = Instantiate(child, transform.position, Quaternion.identity);
-
-
-                    var kidScript = kid.GetComponent<Human>(); //Какого-то черта потомки создаются тоже с супругами....
-                    kidScript.spouse = null;
-                }
-            }
-
-        }
-
-    }
-
-
-    ////////////////////////////////////
-    //Высокоуровневая логика и поведение
-    ///////////////////////////////////
-
-    protected override GameObject[] FindPartners()
-    {
-        GameObject[] partners = GameObject.FindGameObjectsWithTag(tag);
-        List<GameObject> tmp = new List<GameObject>(); //Временный список...
-        foreach (var partner in partners)
-        {
-            var partnerScript = partner.GetComponent<Human>();
-            if (partnerScript.gender != gender && partnerScript.spouse == null)//Если пол партнера не сопадает с твоим, и у него нет супруга..
-            {
-                tmp.Add(partner);//Ура!
-            }
-        }
-        partners = tmp.ToArray();
-        if (partners.Length < 1) return null;
-        return partners;
-    }
-
     protected override void CheckNecessities()
     /*Проверка потребностей. Если есть неудовлетворенные потребности, состояние животного изменится, и оно начнет их удовлетворять*/
     {
@@ -258,6 +169,166 @@ public class Human : Omivorous
         _currentState = STATE.CHILL;
     }
 
+    //////////////////Действия////////////////////////
+    public void SetHome(House newHome)
+    {
+        if (_home != null)
+        {
+            _home.RemoveInhabitor(this);
+        }
+        _home = newHome;
+        _home.AddInhabitor(this);
+    }
+    private void BuildHome()
+    {
+        SetHome(Instantiate(startHome, transform.position, Quaternion.identity).GetComponent<House>());
+    }
+    private void EatFoodFromInventory(GameObject[] foodList)
+    {
+        int i = 0;
+        while (!_satiety.isSatisfied() && i < foodList.Length)
+        {
+            var currentFoodInc = foodList[i].GetComponent<IEdible>().satietyIncrement;
+            _satiety.Increase(currentFoodInc);
+            Inventory.Remove(foodList[i]);
+            i++;
+        }
+    }
+    private void Marry(GameObject humanToMarry)
+    {
+        if (gender == MALE)
+        {
+            this.spouse = humanToMarry;
+
+            var spouseScript = this.spouse.GetComponent<Human>();
+            spouseScript.spouse = this.gameObject;
+            spouseScript.SetHome(this._home);
+        }
+    }
+    private void CollectFruitsFromTree(GameObject tree)
+    {
+        var treeScript = tree.GetComponent<Tree>();
+        
+        List<GameObject> collected = new List<GameObject>();
+
+        foreach(var fruit in treeScript.Inventory) //NB Осторожно! когда дерево будет содержать бревна, нужно будет подкорректировать
+        {
+            var fruitScript = fruit.GetComponent<IThing>();
+            if(CalculateWeight()+fruitScript.weight<MAX_WEIGHT) collected.Add(fruit);
+            else break;
+        }
+        
+        foreach(var fruit in collected)
+        {
+            treeScript.Inventory.Remove(fruit);
+        }
+
+        Inventory.AddRange(collected);
+
+    }
+    protected override void OnTriggerEnter2D(Collider2D collided)
+    /*NB В будущем надо будет отвязать события потребностей от коллайдера*/
+    {
+
+        if (_currentState == STATE.SEEK_FOR_FOOD) //NB yнемного оптимизировал!
+        {
+            if(collided.tag == "Tree")
+            {
+                CollectFruitsFromTree(collided.gameObject);
+            }
+            /* foreach (var collided_food in edibleFood)
+            {
+                if (collided.tag == collided_food.tag)
+                {
+                    Eat(collided.gameObject);
+                    //Debug.Log("Покушал");
+                }
+            } */
+        }
+
+        if (collided.tag == tag && _currentState == STATE.SEEK_FOR_PARTNER) //если это человек...
+        {
+
+            if (CanMarry(collided.gameObject))
+            {
+                Marry(collided.gameObject);
+            }
+
+            if (collided.gameObject == spouse)
+            {
+                _sexNecessity.Increase();
+                if (gender == MALE)
+                {
+                    /*NB Спавн детей происходит только если объект мужского пола.
+                    Связано это с тем, что коллизия происходит и  у самки, и у самца, и если этого условия не будет,
+                    то сгенерируются два ребенка. Возможно, это костыль*/
+                    var kid = Instantiate(child, transform.position, Quaternion.identity);
+
+
+                    var kidScript = kid.GetComponent<Human>(); //Какого-то черта потомки создаются тоже с супругами....
+                    kidScript.spouse = null;
+                }
+            }
+
+        }
+
+    }
+
+
+    //////////////////Файндеры////////////////////////
+
+    private GameObject[] FindTrees()
+    {
+        GameObject[] trees = GameObject.FindGameObjectsWithTag("Tree");
+        List<GameObject> tmp = new List<GameObject>(); //Временный список...
+        foreach (var tree in trees)
+        {
+            var treeScript = tree.GetComponent<Tree>();
+            if (treeScript.Inventory.Count > 0)//Если у дерева есть плоды...
+            {
+                tmp.Add(tree);//Ура!
+            }
+        }
+        trees = tmp.ToArray();
+        if (trees.Length < 1) return null;
+        return trees;
+    }
+    private GameObject[] FindFoodInInventory()
+    {
+        List<GameObject> foodList = new List<GameObject>();
+        foreach (var thing in Inventory)
+        {
+            if (thing.GetComponent<Fruit>() != null) foodList.Add(thing);
+        }
+
+        if (foodList.Count > 0) return foodList.ToArray();
+        else return null;
+    }
+    protected override GameObject[] FindPartners()
+    {
+        GameObject[] partners = GameObject.FindGameObjectsWithTag(tag);
+        List<GameObject> tmp = new List<GameObject>(); //Временный список...
+        foreach (var partner in partners)
+        {
+            var partnerScript = partner.GetComponent<Human>();
+            if (partnerScript.gender != gender && partnerScript.spouse == null)//Если пол партнера не сопадает с твоим, и у него нет супруга..
+            {
+                tmp.Add(partner);//Ура!
+            }
+        }
+        partners = tmp.ToArray();
+        if (partners.Length < 1) return null;
+        return partners;
+    }
+    protected GameObject[] FindHomes()
+    {
+        GameObject[] homes = GameObject.FindGameObjectsWithTag("House"); //NB когда появятся другие постройки, переделай
+        if (homes.Length < 1) return null;
+        return homes;
+    }
+
+    //////////////////Потребности////////////////////////
+
     protected override void UpdateNecessities(bool ready)
     {
         base.UpdateNecessities(ready);
@@ -265,6 +336,7 @@ public class Human : Omivorous
         if (ready) _homeNecessity.Decrease();
     }
 
+    //////////////////Изменение состояния////////////////////////
     protected override void HandleState(bool ready)
     { /*В зависимости от состояния изменяется логика, по которой существо куда-то идет*/
         if (!ready) return;
@@ -276,9 +348,20 @@ public class Human : Omivorous
                 break;
 
             case STATE.SEEK_FOR_FOOD:
-                //Debug.Log("I am hungry!");
-                var food = FindFood();
-                if (food != null) Taxis(FindNearest(food));
+                var foodInInventory = FindFoodInInventory();
+                var treesList = FindTrees();
+
+                if (foodInInventory != null)
+                {
+                    EatFoodFromInventory(foodInInventory);
+                }
+
+                else if (treesList != null)
+                {
+                    
+                    Taxis(FindNearest(treesList));
+                }
+
                 else _currentState = STATE.CHILL;
                 break;
 
@@ -303,6 +386,7 @@ public class Human : Omivorous
                 if (homes != null)
                 {
                     var nearest = FindNearest(homes);
+
                     if (Vector3.Distance(transform.position, nearest) < 1f && Vector3.Distance(transform.position, nearest) > 0.7f) //NB Магические числа!
                     {
                         BuildHome();
@@ -314,6 +398,7 @@ public class Human : Omivorous
 
                     else Taxis(nearest);
                 }
+
                 else
                 {
                     BuildHome();

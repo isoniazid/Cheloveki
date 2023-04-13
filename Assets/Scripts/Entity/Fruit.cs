@@ -1,16 +1,19 @@
+using UnityEngine;
+
 public class Fruit : Entity, IThing, IEdible
 {
-    public int satietyIncrement {get;set;}
-    public int weight { get; set; }
+    [SerializeField] int startSatInc;
+    [SerializeField] int startWeight; //NB PEREDELATb, протупил, свойства не выводятся в юнити
+
+    public int satietyIncrement { get { return startSatInc; } set {} }
+    public int weight { get {return startWeight;} set {} }
     public int price { get; set; }
 
     public override void Start()
     {
         base.Start();
-        weight = 1;
         price = 1;
         name = "Плод";
-        satietyIncrement = 1;
         this.satietyIncrement = satietyIncrement;
     }
 

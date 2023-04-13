@@ -7,6 +7,8 @@ public abstract class Plant : Entity
     public SpriteRenderer spriteRenderer;
     public Sprite[] spriteArray;
 
+    protected Period _divisionPeriod = new Period(TIME_LEN.WEEK_LEN); //Размножение раз в week
+
     private float _coordDispersionMax = 0.7f; //Насколько далеко может спавниться потомок растения
     private float _coordDispersionMin = 0.5f; //Насколько близко потомок растения может спавниться
 
@@ -20,7 +22,7 @@ public abstract class Plant : Entity
         var nearPosition = transform.position + new Vector3(xPosition, yPosition, 0f);
         return nearPosition;
     }
-    protected Period _divisionPeriod = new Period(TIME_LEN.WEEK_LEN); //Размножение раз в week
+    
     protected abstract void Divide(); //Растения размножаются.
 
     protected override void OnMouseDown()

@@ -380,6 +380,7 @@ abstract public class Creature : Entity
             case STATE.SEEK_FOR_PARTNER:
                 var partners = FindPartners();
                 if (partners != null) Taxis(FindNearest(partners));
+                else _currentState = STATE.CHILL;
                 break;
         }
 
