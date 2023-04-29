@@ -1,43 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-/* Все по пирамиде Маслоу */
-
-/* //private const int highestPriority = 95;
-    /*
-    Здесь - максимальные значения приоритетов
-    Чем меньше число - тем больше времени понадобится, чтобы человек начал
-    искать удовлетворения своей потребности
-    */
-//protected const int phisiologicalPriority = 95; //Еда, Секс, Сон
-/*
-Тут без комментариев. Это должно быть уже у животных
-*/
-//protected const int safetyPriority = 80; // Безопасность, стабильность, комфорт
-/*
-Люди не хотят, чтобы на них нападали, хотят жить в теплом доме и чтобы были запасы еды
-*/
-//protected const int socialPriority = 60; // Общение, внимание, забота, поддержка
-/*
-Люди сходят с ума, если у них нет семьи и друзей и они ни с кем не общаются
-Люди хотя заниматься работой и нести пользу
-*/
-//protected const int rulePriority = 40; // Власть, признание, самоуважение, значимость
-/*
-Люди хотят управлять другими людьми и подчинять их себе, либо влиять на них
-*/
-//protected const int creativePriority = 20; //Творчество, образование
-/*
-Люди хотят творить, учиться и изобретать.
-*/
-//protected const int hedonismPriority = 10; //Изысканность, красота, порядок
-/*
-Люди хотят изысков, красоты кутежа
-*/
-//protected const int lowest_priority = -1; //БОХ
-/*
-Эти очень сильно хотят в нирвану
-*/
 
 enum PRIORITY : int { PHISIOLOGICAL, SAFETY, SOCIAL, RULE, CREATIVITY, HEDONISM, GOD };
 public abstract class Necessity
@@ -133,52 +96,11 @@ public abstract class Necessity
 }
 
 
-public class Satiety : Necessity
-{
-     
-    //На старте максимально сыт
-    public Satiety() : base()
-    {
-        name = "Сытость";
-        _priority = (int)PRIORITY.PHISIOLOGICAL;
-    }
 
-    public Satiety(int min, int max) : base(min, max)
-    {
-        name = "Сытость";
-        _priority = (int)PRIORITY.PHISIOLOGICAL;
 
-    }
-}
 
-public class SexNecessity : Necessity
-{
 
-    public SexNecessity() : base()
-    {
-        name = "Секс";
-        _priority = (int)PRIORITY.PHISIOLOGICAL;
-    }
 
-    public SexNecessity(int min, int max) : base(min, max)
-    {
-        name = "Секс";
-        _priority = (int)PRIORITY.PHISIOLOGICAL;
-    }
-}
-
-public class HomeNecessity: Necessity
-{
-
-    public HomeNecessity()
-    {
-        name = "Наличие дома";
-        _thresholdLevel = 0;
-        _maxLevel = 1;
-        currentState = _maxLevel;
-    }
-    
-}
 
 
 /* public class SleepNecessity: Necessity

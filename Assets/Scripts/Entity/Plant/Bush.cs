@@ -29,7 +29,6 @@ public class Bush : Plant
     protected override void OnMouseDown()
     {
         base.OnMouseDown();
-
         messageText += "Куст\n";
         messageText += $"Положение: {transform.position}\n";
         SendText(messageText);

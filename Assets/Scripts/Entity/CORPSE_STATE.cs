@@ -1,0 +1,1 @@
+public enum CORPSE_STATE { DEAD, ROTTEN, BONES };

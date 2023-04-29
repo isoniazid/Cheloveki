@@ -7,6 +7,7 @@ public class Tree : Plant
     [SerializeField] GameObject FruitType;
 
     protected Period _fruitGrowthPeriod = new Period(TIME_LEN.DAYNIGHT_LEN);
+    
 
     protected override void Divide()
     {
@@ -32,6 +33,8 @@ public class Tree : Plant
     public override void Start()
     {
         base.Start();
+        _coordDispersionMin = 0.7f;
+        _coordDispersionMax = 1.5f;
         GrowFruits();
     }
 

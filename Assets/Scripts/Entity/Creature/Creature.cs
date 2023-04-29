@@ -13,18 +13,7 @@ using UnityEngine;
 6) имеют пол
 */
 
-public enum DIRECTIONS : int
-{
-    FORWARD,
-    LEFT_FORWARD,
-    RIGHT_FORWARD,
-    BACKWARD,
-    RIGHT_BACKWARD,
-    LEFT_BACKWARD,
-    LEFT,
-    RIGHT,
-    LEN
-};
+
 
 abstract public class Creature : Entity
 {
@@ -43,6 +32,7 @@ abstract public class Creature : Entity
     protected Animator _animator; //для проигрывания анимаций
     protected Vector3 _currentStep = new Vector3(0.5f, 0.5f, 0f);
     public STATE _currentState = STATE.CHILL; //Текущее состояние. По умолчанию - бродить без дела
+    
 
     ////////////////////////////////////
     //Конструктор и взаимодействие с пользователем

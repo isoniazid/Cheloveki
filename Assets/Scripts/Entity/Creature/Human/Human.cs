@@ -21,6 +21,7 @@ public class Human : Omivorous
 #nullable disable
     [SerializeField] public GameObject startHome;
     [SerializeField] public RuntimeAnimatorController[] genderAnimatorController;
+    [SerializeField] public List<GameObject> huntableAnimals;
 
     private HomeNecessity _homeNecessity = new HomeNecessity();
 
@@ -122,10 +123,10 @@ public class Human : Omivorous
     {
         int result = 0;
 
-        foreach(var item in Inventory)
+        foreach (var item in Inventory)
         {
             var itemScript = item.GetComponent<IThing>();
-            result+=itemScript.weight;
+            result += itemScript.weight;
         }
 
         return result;
@@ -170,6 +171,11 @@ public class Human : Omivorous
     }
 
     //////////////////Действия////////////////////////
+
+    private void Kill(Creature creatureToKill)
+    {
+        creatureToKill.Die();
+    }
     public void SetHome(House newHome)
     {
         if (_home != null)
@@ -208,23 +214,38 @@ public class Human : Omivorous
     private void CollectFruitsFromTree(GameObject tree)
     {
         var treeScript = tree.GetComponent<Tree>();
-        
+
         List<GameObject> collected = new List<GameObject>();
 
-        foreach(var fruit in treeScript.Inventory) //NB Осторожно! когда дерево будет содержать бревна, нужно будет подкорректировать
+        foreach (var fruit in treeScript.Inventory) //NB Осторожно! когда дерево будет содержать бревна, нужно будет подкорректировать
         {
             var fruitScript = fruit.GetComponent<IThing>();
-            if(CalculateWeight()+fruitScript.weight<MAX_WEIGHT) collected.Add(fruit);
+            if (CalculateWeight() + fruitScript.weight < MAX_WEIGHT) collected.Add(fruit);
             else break;
         }
-        
-        foreach(var fruit in collected)
+
+        foreach (var fruit in collected)
         {
             treeScript.Inventory.Remove(fruit);
         }
 
         Inventory.AddRange(collected);
+    }
 
+    private void CollectMeatFromCorpse(Corpse corpse)
+    {
+        List<GameObject> collected = new List<GameObject>();
+
+        foreach(var meat in corpse.Inventory)//NB Осторожно! когда у трупа будут кости, нужно будет подкорректировать
+        {
+            var meatScript = meat.GetComponent<IThing>();
+            if(CalculateWeight()+meatScript.weight < MAX_WEIGHT) collected.Add(meat);
+            else break;
+        }
+
+        foreach(var meat in collected) corpse.Inventory.Remove(meat);
+
+        Inventory.AddRange(collected);
     }
     protected override void OnTriggerEnter2D(Collider2D collided)
     /*NB В будущем надо будет отвязать события потребностей от коллайдера*/
@@ -232,18 +253,32 @@ public class Human : Omivorous
 
         if (_currentState == STATE.SEEK_FOR_FOOD) //NB yнемного оптимизировал!
         {
-            if(collided.tag == "Tree")
+            if (gender == FEMALE)
             {
-                CollectFruitsFromTree(collided.gameObject);
-            }
-            /* foreach (var collided_food in edibleFood)
-            {
-                if (collided.tag == collided_food.tag)
+                if (collided.tag == "Tree")
                 {
-                    Eat(collided.gameObject);
-                    //Debug.Log("Покушал");
+                    CollectFruitsFromTree(collided.gameObject);
                 }
-            } */
+            }
+
+
+            else
+            {
+                foreach (var collidedAnimal in huntableAnimals)
+                {
+                    if (collided.tag == collidedAnimal.tag)
+                    {
+                        Kill(collided.gameObject.GetComponent<Creature>());
+                    }
+                }
+
+                //NB пока сделано не очень, могут быть серьезные баги
+                if(collided.tag == "AnimalCorpse")
+                {
+                    var corpseScript = collided.gameObject.GetComponent<Corpse>();
+                    if(corpseScript.currentState == CORPSE_STATE.DEAD) CollectMeatFromCorpse(corpseScript);
+                }
+            }
         }
 
         if (collided.tag == tag && _currentState == STATE.SEEK_FOR_PARTNER) //если это человек...
@@ -277,6 +312,21 @@ public class Human : Omivorous
 
     //////////////////Файндеры////////////////////////
 
+    private GameObject[] FindAnimalsToHunt()
+    {
+        List<GameObject> animalHuntList = new List<GameObject>();
+        foreach (GameObject animal_type in huntableAnimals)
+        {
+            GameObject[] food = GameObject.FindGameObjectsWithTag(animal_type.tag);
+            if (!(food.Length < 1))
+            {
+                animalHuntList.AddRange(food);
+            }
+        }
+        if (animalHuntList.Count < 1) return null;
+        else return animalHuntList.ToArray();
+    }
+
     private GameObject[] FindTrees()
     {
         GameObject[] trees = GameObject.FindGameObjectsWithTag("Tree");
@@ -298,7 +348,7 @@ public class Human : Omivorous
         List<GameObject> foodList = new List<GameObject>();
         foreach (var thing in Inventory)
         {
-            if (thing.GetComponent<Fruit>() != null) foodList.Add(thing);
+            if (thing.GetComponent<IEdible>() != null) foodList.Add(thing);
         }
 
         if (foodList.Count > 0) return foodList.ToArray();
@@ -337,6 +387,33 @@ public class Human : Omivorous
     }
 
     //////////////////Изменение состояния////////////////////////
+
+    void Hunt()
+    {
+        var animalsList = FindAnimalsToHunt();
+
+        if (animalsList != null)
+        {
+            Taxis(FindNearest(animalsList));
+        }
+
+        else _currentState = STATE.CHILL;
+
+    }
+
+    void SeekForFruits()
+    {
+
+        var treesList = FindTrees();
+
+        if (treesList != null)
+        {
+
+            Taxis(FindNearest(treesList));
+        }
+
+        else _currentState = STATE.CHILL;
+    }
     protected override void HandleState(bool ready)
     { /*В зависимости от состояния изменяется логика, по которой существо куда-то идет*/
         if (!ready) return;
@@ -348,21 +425,18 @@ public class Human : Omivorous
                 break;
 
             case STATE.SEEK_FOR_FOOD:
-                var foodInInventory = FindFoodInInventory();
-                var treesList = FindTrees();
 
+                var foodInInventory = FindFoodInInventory();
                 if (foodInInventory != null)
                 {
                     EatFoodFromInventory(foodInInventory);
+                    break;
                 }
 
-                else if (treesList != null)
-                {
-                    
-                    Taxis(FindNearest(treesList));
-                }
 
-                else _currentState = STATE.CHILL;
+                if (gender == FEMALE) SeekForFruits();
+                else Hunt();
+
                 break;
 
             case STATE.SEEK_FOR_PARTNER:

@@ -5,32 +5,30 @@ using UnityEngine;
 public class Corpse : Entity
 {
 
-    public SpriteRenderer spriteRenderer;
+    //public SpriteRenderer spriteRenderer;
     public Sprite[] spriteArray;
 
-
-    enum STATE { DEAD, ROTTEN, BONES };
-    private STATE _currentState = STATE.DEAD;
+    public CORPSE_STATE currentState = CORPSE_STATE.DEAD;
     private Period _updatePeriod = new Period(TIME_LEN.DAYNIGHT_LEN);
     public override void Start()
     {
         base.Start();
-        spriteRenderer.sprite = spriteArray[(int)_currentState];
+        spriteRenderer.sprite = spriteArray[(int)currentState];
     }
 
     private void HandleState()
     {
-        switch (_currentState)
+        switch (currentState)
         {
-            case STATE.DEAD:
-                _currentState = STATE.ROTTEN;
-                spriteRenderer.sprite = spriteArray[(int)_currentState];
+            case CORPSE_STATE.DEAD:
+                currentState = CORPSE_STATE.ROTTEN;
+                spriteRenderer.sprite = spriteArray[(int)currentState];
                 break;
-            case STATE.ROTTEN:
-                _currentState = STATE.BONES;
-                spriteRenderer.sprite = spriteArray[(int)_currentState];
+            case CORPSE_STATE.ROTTEN:
+                currentState = CORPSE_STATE.BONES;
+                spriteRenderer.sprite = spriteArray[(int)currentState];
                 break;
-            case STATE.BONES:
+            case CORPSE_STATE.BONES:
                 break;
         }
     }

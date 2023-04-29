@@ -4,6 +4,8 @@ using UnityEngine;
 
 abstract public class Entity : MonoBehaviour
 {
+    protected SpriteRenderer spriteRenderer;
+    protected Color startColor;
     [SerializeField] public List<GameObject> Inventory = new List<GameObject>();
     protected float _timerStart;
     protected float _timeThreshold = TIME_LEN.DEFAULT_TICK;
@@ -37,11 +39,22 @@ abstract public class Entity : MonoBehaviour
 
     }
 
+    protected void Toggle()
+    { //NB возможно, я найду более хороший способ скрыть объект, чтобы отъедалось меньше ресурсов
+       spriteRenderer.color = new Color(0,0,0,0);
+    }
+
+    protected void Untoggle()
+    {
+        spriteRenderer.color = startColor;
+    }
 
 
     // Start is called before the first frame update
     public virtual void Start()
     {
+        spriteRenderer = GetComponent<SpriteRenderer>();
+        startColor = spriteRenderer.color;
         SendText = GameObject.FindGameObjectWithTag("MainUI").GetComponent<InfoText>().ChangeText;
         _timerStart = Time.time;
     }
